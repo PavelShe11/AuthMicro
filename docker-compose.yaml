@@ -1,0 +1,42 @@
+services:
+  auth-service:
+    container_name: auth-service
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "${HTTP_PORT}:${HTTP_PORT}"
+      - "${GRPC_PORT}:${GRPC_PORT}"
+    env_file:
+      - ./.env
+    depends_on:
+      auth-db-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - auth-network
+
+  auth-db-postgres:
+    container_name: auth-db-postgres
+    image: postgres:16-alpine
+    ports:
+      - "${POSTGRES_DB_EXTERNAL_PORT}:${POSTGRES_DB_INTERNAL_PORT}"
+    env_file:
+      - ./.env
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U $POSTGRES_USER -d $POSTGRES_DB'" ]
+      interval: ${HEALTHCHECK_INTERVAL}
+      timeout: ${HEALTHCHECK_TIMEOUT}
+      retries: ${HEALTHCHECK_RETRIES}
+    volumes:
+      - auth-db-postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - auth-network
+
+volumes:
+  auth-db-postgres:
+
+networks:
+  auth-network:
+    driver: bridge
