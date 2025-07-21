@@ -1,0 +1,27 @@
+spring:
+  config:
+    import: "optional:file:../../.env[.properties]"
+
+  profiles:
+    active: separate
+
+  datasource:
+    url: jdbc:postgresql://${AUTH_POSTGRES_DB_HOST}:${AUTH_POSTGRES_DB_INTERNAL_PORT}/${AUTH_POSTGRES_DB_NAME}
+    username: ${AUTH_POSTGRES_DB_USER}
+    password: ${AUTH_POSTGRES_DB_PASSWORD}
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:session-schema.sql
+
+  session:
+    store-type: jdbc
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
