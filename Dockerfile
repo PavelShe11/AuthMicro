@@ -28,3 +28,4 @@ COPY --from=build /home/gradle/project/build/libs/*.jar auth-micro.jar
 ENTRYPOINT ["java", "-jar", "auth-micro.jar"]
 
 EXPOSE 8080
+EXPOSE 9090
