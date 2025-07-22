@@ -23,6 +23,9 @@ public class RegistrationSessionEntity {
     @Column(nullable = false)
     private String code;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Column(name = "code_expires", nullable = false)
     private Instant codeExpires;
 

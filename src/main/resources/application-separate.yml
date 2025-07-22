@@ -22,3 +22,23 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+
+            client-id: ${client-id}
+            authorization-grant-type: ${spring.security.oauth2.client.registration.keycloak.authorization-grant-type}
+            scope: ${spring.security.oauth2.client.registration.keycloak.scope}
+        provider:
+          keycloak:
+            issuer-uri: ${spring.security.oauth2.client.provider.keycloak.issuer-uri}
+            user-name-attribute: ${spring.security.oauth2.client.provider.keycloak.user-name-attribute}
+
+      resourceserver:
+        jwt:
+          issuer-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}
+
+resource-url: ${resource-url}
