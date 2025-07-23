@@ -10,11 +10,14 @@ services:
     env_file:
       - ./.env
     depends_on:
+      keycloak:
+        condition: service_started
       auth-db-postgres:
         condition: service_healthy
     restart: unless-stopped
     networks:
       - auth-network
+      - shared-network
 
   auth-db-postgres:
     container_name: auth-db-postgres
@@ -34,9 +37,53 @@ services:
     networks:
       - auth-network
 
+# TODO: перенести всё, что связано с keycloak в общий компоуз при переходе к отладке между сервисами
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    container_name: keycloak
+    # TODO: при выходе в прод заменить start-dev на start
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db-postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8180:8080"
+    depends_on:
+      - keycloak-db-postgres
+    volumes:
+      - ./keycloak-config:/opt/keycloak/data/import
+    networks:
+      - keycloak-network
+      - shared-network
+
+  keycloak-db-postgres:
+    image: postgres:16-alpine
+    container_name: keycloak_postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    ports:
+      - "5433:5432"
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+    networks:
+      - keycloak-network
+
 volumes:
   auth-db-postgres:
+  keycloak_postgres_data:
 
 networks:
   auth-network:
+    driver: bridge
+  keycloak-network:
+    driver: bridge
+  shared-network:
     driver: bridge

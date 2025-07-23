@@ -22,17 +22,24 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable()) // <--- ОТКЛЮЧАЕТ CSRF
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/auth/v1/registration").permitAll()
+                        auth -> auth
+                                .requestMatchers("/auth/v1/registration").permitAll()
                                 .requestMatchers("/auth/v1/registration/confirmEmail").permitAll()
                                 .requestMatchers("/auth/v1/login/sendCodeEmail").permitAll()
                                 .requestMatchers("/auth/v1/login/confirmEmail").permitAll()
-                                .requestMatchers("/actuator/**").permitAll()
+                                .requestMatchers("/actuator/**").hasRole("admin")
                                 .requestMatchers("/auth/v1/refreshToken").hasRole("user")
+
+                                // for test
+                                .requestMatchers("/auth/test/public").permitAll()
+                                .requestMatchers("/auth/test/**").authenticated()
+                                //
+
                                 .anyRequest().authenticated()
                 ).sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .httpBasic(Customizer.withDefaults())
+//                .httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(
                         resourceServer -> resourceServer.jwt(
                                 jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(
