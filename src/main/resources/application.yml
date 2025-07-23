@@ -1,14 +1,8 @@
 spring:
-  config:
-    import: "optional:file:../../.env[.properties]"
-
-  profiles:
-    active: separate
-
   datasource:
-    url: jdbc:postgresql://${AUTH_POSTGRES_DB_HOST}:${AUTH_POSTGRES_DB_INTERNAL_PORT}/${AUTH_POSTGRES_DB_NAME}
-    username: ${AUTH_POSTGRES_DB_USER}
-    password: ${AUTH_POSTGRES_DB_PASSWORD}
+    url: jdbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_INTERNAL_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
 
   sql:
     init:
@@ -25,3 +19,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - debug
+          - env
