@@ -34,16 +34,23 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("io.grpc:grpc-services")
-    implementation("org.springframework.grpc:spring-grpc-server-web-spring-boot-starter")
+    implementation("net.devh:grpc-client-spring-boot-starter:2.15.0.RELEASE")
+    implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
+
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    implementation ("io.grpc:grpc-protobuf:1.73.0")
+    implementation ("io.grpc:grpc-stub:1.73.0")
+    implementation ("com.google.protobuf:protobuf-java:3.25.1")
     compileOnly("org.projectlombok:lombok")
+    compileOnly ("org.apache.tomcat:annotations-api:6.0.53")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    runtimeOnly ("io.grpc:grpc-netty-shaded:1.73.0")
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor ("org.mapstruct:mapstruct-processor:1.5.5.Final")
 }
@@ -56,11 +63,11 @@ dependencyManagement {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc"
+        artifact = "com.google.protobuf:protoc:3.25.1"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java"
+            artifact = "io.grpc:protoc-gen-grpc-java:1.73.0"
         }
     }
     generateProtoTasks {

@@ -4,6 +4,7 @@ import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.BadRequestException;
 import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
+import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RegistrationSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,20 +21,16 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final RegistrationSessionRepository registrationSessionRepository;
     private final CodeGeneratorService registrationGeneratorService;
+    private final EmailValidatorService emailValidatorService;
 
     public RegistrationResponseDto register(String email) {
 //        if (email.trim().isEmpty()) {
 //            throw new BadRequestException("Поле Email не может быть пустым.");
 //        }
 
-//        FindUserByEmailRequest request = FindUserByEmailRequest.newBuilder()
-//                .setEmail(email)
-//                .build();
-
-//        FindUserByEmailResponse response = userServiceStub.findUserByEmail(request);
-
-//        if (response.getExists()) {
-//            throw new ServerAnswerException("Сервер не отвечает.");
+        if (emailValidatorService.isAccountExists(email)) {
+            throw new ServerAnswerException("Сервер не отвечает.");
+        }
 
         String code = registrationGeneratorService.codeGenerate();
         Instant codeExpires = registrationGeneratorService.codeExpiresGenerate();
