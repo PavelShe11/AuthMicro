@@ -35,11 +35,17 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("io.grpc:grpc-services")
     implementation("org.springframework.grpc:spring-grpc-server-web-spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.session:spring-session-jdbc")
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor ("org.mapstruct:mapstruct-processor:1.5.5.Final")
 }
 
 dependencyManagement {

@@ -1,8 +1,15 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
-    url: jdbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_INTERNAL_PORT}/${POSTGRES_DB}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+#    url: jdbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_INTERNAL_PORT}/${POSTGRES_DB}
+#    username: ${POSTGRES_USER}
+#    password: ${POSTGRES_PASSWORD}
+
+#    url: jdbc:postgresql://localhost:5432/auth-micro-db
+#    username: postgres
+#    password: 267115
 
   sql:
     init:
@@ -29,3 +36,5 @@ management:
           - info
           - debug
           - env
+
+jwt_secret: ${JWT_SECRET}

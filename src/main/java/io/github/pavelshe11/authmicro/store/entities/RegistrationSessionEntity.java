@@ -23,10 +23,22 @@ public class RegistrationSessionEntity {
     @Column(nullable = false)
     private String code;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Column(name = "code_expires", nullable = false)
     private Instant codeExpires;
 
     @Builder.Default
+    @Column(name = "is_accepted_privacy_policy", nullable = false)
+    private Boolean acceptedPrivacyPolicy = true;
+
+    @Builder.Default
+    @Column(name = "is_accepted_personal_data_processing", nullable = false)
+    private Boolean acceptedPersonalDataProcessing = true;
+
+    @Builder.Default
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
+
 }
