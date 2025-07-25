@@ -46,5 +46,8 @@ grpc:
     account-creation-service:
       address: static://localhost:9092
       negotiation-type: plaintext
+    role-resolver-service:
+      address: static://localhost:9092
+      negotiation-type: plaintext
 
 jwt_secret: ${JWT_SECRET}

@@ -61,21 +61,22 @@ public class AuthController {
                 registrationConfirmRequest.getCode());
     }
 
-//    @PostMapping(AUTH + API_VERSION + LOGIN + SEND_CODE)
-//    public LoginResponseDto sendLoginCode(
-//            @RequestBody LoginRequestDto loginRequest
-//    ) {
-//        // TODO: send email
-//        return loginService.login(
-//
-//        );
-//    }
+    @PostMapping(AUTH + API_VERSION + LOGIN + SEND_CODE)
+    public LoginResponseDto sendLoginCode(
+            @RequestBody LoginRequestDto loginRequest
+    ) {
+        // TODO: send email
+        return loginService.login(loginRequest.getEmail());
+    }
 
     @PostMapping(AUTH + API_VERSION + LOGIN + CONFIRM)
     public LoginConfirmResponseDto confirmLoginEmail(
             @RequestBody LoginConfirmRequestDto loginConfirmRequest
     ) {
-        return loginService.confirmLoginEmail();
+        return loginService.confirmLoginEmail(
+                loginConfirmRequest.getEmail(),
+                loginConfirmRequest.getCode()
+        );
     }
 
     @PostMapping(AUTH + API_VERSION + REFRESH_TOKEN)

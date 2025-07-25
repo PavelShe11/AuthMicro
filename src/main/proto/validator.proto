@@ -10,8 +10,10 @@ service AccountValidatorService {
 
 message CheckEmailRequest {
   string email = 1; // цифры - это идентификаторы для порядка полей
+  bool returnAccountId = 2; // при login надо вернуть, при registration - нет
 }
 
 message CheckEmailResponse {
   bool exists = 1;
+  string accountId = 2;
 }

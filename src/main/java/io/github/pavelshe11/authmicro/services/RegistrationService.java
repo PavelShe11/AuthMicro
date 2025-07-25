@@ -21,15 +21,15 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final RegistrationSessionRepository registrationSessionRepository;
     private final CodeGeneratorService registrationGeneratorService;
-    private final EmailValidatorService emailValidatorService;
-    private final AccountCreationRequestService accountCreationRequestService;
+    private final EmailValidatorGrpcService emailValidatorGrpcService;
+    private final AccountCreationRequestGrpcService accountCreationRequestGrpcService;
 
     public RegistrationResponseDto register(String email) {
 //        if (email.trim().isEmpty()) {
 //            throw new BadRequestException("Поле Email не может быть пустым.");
 //        }
 
-        if (emailValidatorService.isAccountExists(email)) {
+        if (emailValidatorGrpcService.isAccountExists(email)) {
             throw new ServerAnswerException("Сервер не отвечает.");
         }
 
@@ -78,14 +78,14 @@ public class RegistrationService {
         }
 
         if (!passwordEncoder.matches(code, registrationSession.getCode())) {
-            throw new InvalidCodeException("Неверный код подтверждения ");
+            throw new InvalidCodeException("Неверный код подтверждения.");
         }
 
         if (registrationSession.getCodeExpires().isBefore(Instant.now())) {
             throw new CodeVerificationException("Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
         }
 
-        boolean isAccountCreated = accountCreationRequestService.createAccount(email);
+        boolean isAccountCreated = accountCreationRequestGrpcService.createAccount(email);
 
         if (!isAccountCreated) {
             throw new ServerAnswerException("Сервер не отвечает.");

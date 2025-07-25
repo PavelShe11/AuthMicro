@@ -6,7 +6,7 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AccountCreationRequestService {
+public class AccountCreationRequestGrpcService {
     @GrpcClient("account-creation-service")
     private AccountCreationServiceGrpc.AccountCreationServiceBlockingStub accountCreationServiceBlockingStub;
 
