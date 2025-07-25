@@ -22,6 +22,7 @@ public class RegistrationService {
     private final RegistrationSessionRepository registrationSessionRepository;
     private final CodeGeneratorService registrationGeneratorService;
     private final EmailValidatorService emailValidatorService;
+    private final AccountCreationRequestService accountCreationRequestService;
 
     public RegistrationResponseDto register(String email) {
 //        if (email.trim().isEmpty()) {
@@ -76,7 +77,6 @@ public class RegistrationService {
             return ResponseEntity.ok().build();
         }
 
-
         if (!passwordEncoder.matches(code, registrationSession.getCode())) {
             throw new InvalidCodeException("Неверный код подтверждения ");
         }
@@ -85,7 +85,12 @@ public class RegistrationService {
             throw new CodeVerificationException("Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
         }
 
-        // Обрщение к сервису networking по grpc для создания юзера
+        boolean isAccountCreated = accountCreationRequestService.createAccount(email);
+
+        if (!isAccountCreated) {
+            throw new ServerAnswerException("Сервер не отвечает.");
+        }
+
         return ResponseEntity.ok().build();
     }
 }

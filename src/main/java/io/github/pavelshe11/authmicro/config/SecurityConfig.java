@@ -32,8 +32,8 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/v1/refreshToken").hasRole("user")
 
                                 // for test
-                                .requestMatchers("/auth/test/public").permitAll()
-                                .requestMatchers("/auth/test/**").authenticated()
+                                .requestMatchers("/test/public").permitAll()
+                                .requestMatchers("/test/**").authenticated()
                                 //
 
                                 .anyRequest().authenticated()

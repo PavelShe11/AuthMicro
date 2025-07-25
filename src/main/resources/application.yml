@@ -7,9 +7,9 @@ spring:
 #    username: ${POSTGRES_USER}
 #    password: ${POSTGRES_PASSWORD}
 
-#    url: jdbc:postgresql://localhost:5432/auth-micro-db
-#    username: postgres
-#    password: 267115
+    url: jdbc:postgresql://localhost:5432/my-app-db
+    username: postgres
+    password: 267115
 
   sql:
     init:
@@ -26,6 +26,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        default_schema: auth
 
 management:
   endpoints:
@@ -39,8 +40,11 @@ management:
 
 grpc:
   client:
-    email-validator-service: address=localhost:9092
-    negotiation-type: plaintext
-
+    email-validator-service:
+      address: static://localhost:9092
+      negotiation-type: plaintext
+    account-creation-service:
+      address: static://localhost:9092
+      negotiation-type: plaintext
 
 jwt_secret: ${JWT_SECRET}
