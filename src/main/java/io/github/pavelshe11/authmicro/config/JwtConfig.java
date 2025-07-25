@@ -3,6 +3,7 @@ package io.github.pavelshe11.authmicro.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 
 import javax.crypto.SecretKey;
@@ -23,7 +24,9 @@ public class JwtConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(SecretKey jwtSecretKey) {
-        return NimbusJwtDecoder.withSecretKey(jwtSecretKey).build();
+        return NimbusJwtDecoder.withSecretKey(jwtSecretKey)
+                .macAlgorithm(MacAlgorithm.HS512)
+                .build();
     }
 
 }

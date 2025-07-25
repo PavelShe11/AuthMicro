@@ -33,7 +33,8 @@ public class SecurityConfig {
 
                                 // for test
                                 .requestMatchers("/test/public").permitAll()
-                                .requestMatchers("/test/**").authenticated()
+                                .requestMatchers("/test/user").hasRole("user")
+                                .requestMatchers("/test/**").hasRole("admin")
                                 //
 
                                 .anyRequest().authenticated()
@@ -44,7 +45,7 @@ public class SecurityConfig {
                 .oauth2ResourceServer(
                         resourceServer -> resourceServer.jwt(
                                 jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(
-                                        keycloackAuthConverter()
+                                        jwtAuthConverter()
 
                                 )
                         )
@@ -52,7 +53,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    private Converter<Jwt, ? extends AbstractAuthenticationToken> keycloackAuthConverter() {
+    private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthConverter() {
         var converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(
                 new AuthoritiseConverter()

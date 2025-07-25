@@ -50,4 +50,11 @@ grpc:
       address: static://localhost:9092
       negotiation-type: plaintext
 
-jwt_secret: ${JWT_SECRET}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+
+jwt:
+  secret: ${JWT_SECRET}
