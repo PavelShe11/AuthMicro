@@ -1,12 +1,10 @@
 package io.github.pavelshe11.authmicro.services;
 
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
-import io.github.pavelshe11.authmicro.api.exceptions.BadRequestException;
-import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
-import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RegistrationSessionRepository;
+import io.github.pavelshe11.authmicro.validators.RegistrationValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,17 +19,13 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final RegistrationSessionRepository registrationSessionRepository;
     private final CodeGeneratorService registrationGeneratorService;
-    private final EmailValidatorGrpcService emailValidatorGrpcService;
     private final AccountCreationRequestGrpcService accountCreationRequestGrpcService;
+    private final RegistrationValidation registrationValidator;
 
     public RegistrationResponseDto register(String email) {
-//        if (email.trim().isEmpty()) {
-//            throw new BadRequestException("Поле Email не может быть пустым.");
-//        }
 
-        if (emailValidatorGrpcService.isAccountExists(email)) {
-            throw new ServerAnswerException("Сервер не отвечает.");
-        }
+        email = registrationValidator.validateAndTrimEmail(email);
+        registrationValidator.checkIfAccountExists(email);
 
         String code = registrationGeneratorService.codeGenerate();
         Instant codeExpires = registrationGeneratorService.codeExpiresGenerate();
@@ -41,17 +35,51 @@ public class RegistrationService {
                 .orElse(null);
 
         if (registrationSession != null) {
-            if (registrationSession.getCodeExpires().isAfter(Instant.now())) {
-                throw new BadRequestException("Код не истёк.");
-            } else {
-                registrationSession.setCode(registrationGeneratorService.CodeHash(code));
-                registrationSession.setCodeExpires(codeExpires);
-                registrationSessionRepository.save(registrationSession);
+            registrationValidator.checkIfCodeInExistingSessionExpired(registrationSession);
 
-                return new RegistrationResponseDto(registrationSession.getId(), codeExpires, code);
-            }
+            return refreshCodeAndReturnRegistrationResponseDto(
+                    registrationSession,
+                    code, codeExpires
+            );
         }
 
+        return returnNewRegistrationResponseDto(email, code, codeExpires);
+    }
+
+
+    public ResponseEntity<Void> confirmEmail(UUID registrationId, String email, String code) {
+        RegistrationSessionEntity registrationSession = registrationSessionRepository
+                .findById(registrationId)
+                .orElse(null);
+
+        if (registrationSession == null) {
+            return ResponseEntity.ok().build();
+        }
+
+        registrationValidator.checkIfCodeIsValid(code, registrationSession, passwordEncoder);
+
+        registrationValidator.checkIfCodeInExistingSessionExpired(registrationSession);
+
+        boolean isAccountCreated = accountCreationRequestGrpcService.createAccount(email);
+
+        if (!isAccountCreated) {
+            throw new ServerAnswerException("Сервер не отвечает.");
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+
+    private RegistrationResponseDto refreshCodeAndReturnRegistrationResponseDto(RegistrationSessionEntity registrationSession, String code, Instant codeExpires) {
+        registrationSession.setCode(registrationGeneratorService.CodeHash(code));
+        registrationSession.setCodeExpires(codeExpires);
+        registrationSessionRepository.save(registrationSession);
+
+        return new RegistrationResponseDto(registrationSession.getId(), codeExpires, code);
+    }
+
+    private RegistrationResponseDto returnNewRegistrationResponseDto(String email, String code, Instant codeExpires) {
+        RegistrationSessionEntity registrationSession;
         registrationSession = registrationSessionRepository.save(
                 RegistrationSessionEntity.builder()
                         .email(email)
@@ -67,30 +95,5 @@ public class RegistrationService {
                 registrationSession.getCodeExpires(),
                 code
         );
-    }
-
-    public ResponseEntity<Void> confirmEmail(UUID registrationId, String email, String code) {
-        RegistrationSessionEntity registrationSession = registrationSessionRepository
-                .findById(registrationId)
-                .orElse(null);
-        if (registrationSession == null) {
-            return ResponseEntity.ok().build();
-        }
-
-        if (!passwordEncoder.matches(code, registrationSession.getCode())) {
-            throw new InvalidCodeException("Неверный код подтверждения.");
-        }
-
-        if (registrationSession.getCodeExpires().isBefore(Instant.now())) {
-            throw new CodeVerificationException("Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
-        }
-
-        boolean isAccountCreated = accountCreationRequestGrpcService.createAccount(email);
-
-        if (!isAccountCreated) {
-            throw new ServerAnswerException("Сервер не отвечает.");
-        }
-
-        return ResponseEntity.ok().build();
     }
 }

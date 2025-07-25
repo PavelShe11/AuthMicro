@@ -3,9 +3,13 @@ spring:
     import: optional:file:.env[.properties]
 
   datasource:
-    url: jdbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_INTERNAL_PORT}/${POSTGRES_DB}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+#    url: jdbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_INTERNAL_PORT}/${POSTGRES_DB}
+#    username: ${POSTGRES_USER}
+#    password: ${POSTGRES_PASSWORD}
+
+    url: jdbc:postgresql://localhost:5432/my-app-db
+    username: postgres
+    password: 267115
 
   sql:
     init:
@@ -37,14 +41,20 @@ management:
 grpc:
   client:
     email-validator-service:
-      address: static://networking-service:9092
+      address: static://localhost:9092
       negotiation-type: plaintext
     account-creation-service:
-      address: static://networking-service:9092
+      address: static://localhost:9092
       negotiation-type: plaintext
     role-resolver-service:
-      address: static://networking-service:9092
+      address: static://localhost:9092
       negotiation-type: plaintext
+
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
 
 jwt:
   secret: ${JWT_SECRET}

@@ -23,6 +23,9 @@ public class LoginSessionEntity {
     private UUID accountId;
 
     @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false)
     private String code;
 
     @Column(name = "code_expires", nullable = false)
