@@ -10,14 +10,17 @@ import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Component
 public class LoginValidation {
-    EmailValidatorGrpcService emailValidatorGrpcService;
-    LoginSessionRepository loginSessionRepository;
+    private final EmailValidatorGrpcService emailValidatorGrpcService;
+    private final LoginSessionRepository loginSessionRepository;
     public String validateAndTrimEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             throw new BadRequestException("email", "Поле пустое.");
@@ -52,11 +55,16 @@ public class LoginValidation {
         }
     }
 
-    public void checkIfCodeInExistingSessionExpired(LoginSessionEntity loginSession) {
-        if (loginSession.getCodeExpires().isAfter(Instant.now())) {
-            throw new CodeVerificationException("error", "Код не истёк.");
-        } else if (loginSession.getCodeExpires().isBefore(Instant.now())) {
-            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
+    public void ensureCodeIsExpired(LoginSessionEntity session) {
+        if (session.getCodeExpires().isAfter(Instant.now())) {
+            throw new CodeVerificationException("error", "Код еще не истёк.");
         }
     }
+
+    public void ensureCodeIsNotExpired(LoginSessionEntity session) {
+        if (session.getCodeExpires().isBefore(Instant.now())) {
+            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код.");
+        }
+    }
+
 }

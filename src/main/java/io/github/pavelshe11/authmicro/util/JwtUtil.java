@@ -46,32 +46,7 @@ public class JwtUtil {
                 .setIssuer("micro-auth")
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + time)) // 5 days expiration
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 }
-//    private Claims extractAllClaims(String token) {
-//        return Jwts.parserBuilder()
-//                .setSigningKey(key)
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody();
-//    }
-//
-//    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-//        final Claims claims = extractAllClaims(token);
-//        return claimsResolver.apply(claims);
-//    }
-//
-//    public Date extractExpirationTime(String token) {
-//        return extractClaim(token, Claims::getExpiration);
-//    }
-//
-//    private Boolean isTokenExpired(String token) {
-//        return extractExpirationTime(token).before(new Date());
-//    }
-//
-//    public Boolean validateToken(String token) {
-//       return (!isTokenExpired(token));
-//    }
-//}

@@ -56,6 +56,7 @@ public class LoginService {
             Instant codeExpires = codeGeneratorService.codeExpiresGenerate();
             LoginSessionEntity loginSession = LoginSessionEntity.builder()
                     .accountId(accountId)
+                    .email(email)
                     .code(passwordEncoder.encode(code))
                     .codeExpires(codeExpires)
                     .build();
@@ -72,7 +73,7 @@ public class LoginService {
         LoginSessionEntity session = loginValidator.getValidLoginSessionOrThrow(accountId, email);
 
         loginValidator.checkIfCodeIsValid(session, code, passwordEncoder);
-        loginValidator.checkIfCodeInExistingSessionExpired(session);
+        loginValidator.ensureCodeIsNotExpired(session);
 
         boolean isAdmin = roleResolverGrpcService.isAdmin(accountId);
 

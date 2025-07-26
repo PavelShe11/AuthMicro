@@ -33,11 +33,15 @@ public class RegistrationValidation {
         }
     }
 
-    public void checkIfCodeInExistingSessionExpired(RegistrationSessionEntity registrationSession) {
-        if (registrationSession.getCodeExpires().isAfter(Instant.now())) {
-            throw new CodeVerificationException("error", "Код не истёк.");
-        } else if (registrationSession.getCodeExpires().isBefore(Instant.now())) {
-            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
+    public void ensureCodeIsExpired(RegistrationSessionEntity session) {
+        if (session.getCodeExpires().isAfter(Instant.now())) {
+            throw new CodeVerificationException("error", "Код еще не истёк.");
+        }
+    }
+
+    public void ensureCodeIsNotExpired(RegistrationSessionEntity session) {
+        if (session.getCodeExpires().isBefore(Instant.now())) {
+            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код.");
         }
     }
 
