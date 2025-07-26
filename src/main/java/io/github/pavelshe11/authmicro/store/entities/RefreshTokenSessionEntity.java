@@ -32,8 +32,11 @@ public class RefreshTokenSessionEntity {
     @Column(nullable = false)
     private String ip;
 
-    @Column(name = "expires_at", nullable = false)
-    private Instant expiresAt;
+    @Column(name = "access_token_expires", nullable = false)
+    private Instant accessTokenExpires;
+
+    @Column(name = "refresh_token_expires", nullable = false)
+    private Instant refreshTokenExpires;
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)

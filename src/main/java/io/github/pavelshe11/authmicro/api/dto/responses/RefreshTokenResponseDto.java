@@ -4,11 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.Instant;
+
 @Data
 @AllArgsConstructor
 @Builder
 public class RefreshTokenResponseDto {
     private String refreshToken;
+    private Instant refreshTokenExpires;
     private String accessToken;
+    private Instant accessTokenExpires;
 
 }
