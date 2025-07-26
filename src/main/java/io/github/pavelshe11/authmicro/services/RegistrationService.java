@@ -1,5 +1,6 @@
 package io.github.pavelshe11.authmicro.services;
 
+import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
@@ -22,13 +23,20 @@ public class RegistrationService {
     private final AccountCreationRequestGrpcService accountCreationRequestGrpcService;
     private final RegistrationValidation registrationValidator;
 
-    public RegistrationResponseDto register(String email) {
+    public RegistrationResponseDto register(RegistrationRequestDto registrationRequest) {
+
+        String email = registrationRequest.getEmail();
 
         email = registrationValidator.validateAndTrimEmail(email);
         registrationValidator.checkIfAccountExists(email);
 
         String code = registrationGeneratorService.codeGenerate();
         Instant codeExpires = registrationGeneratorService.codeExpiresGenerate();
+
+        registrationValidator.checkIfPolicyAgreementsAcceptedOfThrow(
+                registrationRequest.getAcceptedPrivacyPolicy(),
+                registrationRequest.getAcceptedPersonalDataProcessing()
+        );
 
         RegistrationSessionEntity registrationSession = registrationSessionRepository
                 .findByEmail(email)

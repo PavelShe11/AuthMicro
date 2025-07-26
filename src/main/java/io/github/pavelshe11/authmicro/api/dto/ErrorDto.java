@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,4 +18,7 @@ public class ErrorDto {
 
     @JsonProperty("error_description")
     private String errorDescription;
+
+    @JsonProperty("error_description")
+    private List<FieldErrorDto> detailedErrors;
 }

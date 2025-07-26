@@ -1,13 +1,12 @@
 package io.github.pavelshe11.authmicro.api.controllers;
 
-import io.github.pavelshe11.authmicro.api.dto.requests.LoginConfirmRequestDto;
-import io.github.pavelshe11.authmicro.api.dto.requests.LoginRequestDto;
-import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
-import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
+import io.github.pavelshe11.authmicro.api.dto.requests.*;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
+import io.github.pavelshe11.authmicro.api.dto.responses.RefreshTokenResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.services.LoginService;
+import io.github.pavelshe11.authmicro.services.RefreshTokenService;
 import io.github.pavelshe11.authmicro.services.RegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +23,7 @@ public class AuthController {
 
     private final RegistrationService registrationService;
     private final LoginService loginService;
+    private final RefreshTokenService refreshTokenService;
 
 
     @PostMapping("/test/user")
@@ -44,17 +44,15 @@ public class AuthController {
     }
 
 
-
-
     @PostMapping(AUTH + API_VERSION + REGISTRATION)
     public RegistrationResponseDto sendRegistrationCode(@Valid @RequestBody RegistrationRequestDto registrationRequest) {
         // TODO: send email
-        return registrationService.register(registrationRequest.getEmail());
+        return registrationService.register(registrationRequest);
     }
 
     @PostMapping(AUTH + API_VERSION + REGISTRATION + CONFIRM)
     public ResponseEntity<Void> registrationConfirmEmail(
-            @RequestBody RegistrationConfirmRequestDto registrationConfirmRequest) {
+            @Valid @RequestBody RegistrationConfirmRequestDto registrationConfirmRequest) {
         return registrationService.confirmEmail(
                 registrationConfirmRequest.getRegistrationId(),
                 registrationConfirmRequest.getEmail(),
@@ -63,7 +61,7 @@ public class AuthController {
 
     @PostMapping(AUTH + API_VERSION + LOGIN + SEND_CODE)
     public LoginResponseDto sendLoginCode(
-            @RequestBody LoginRequestDto loginRequest
+            @Valid @RequestBody LoginRequestDto loginRequest
     ) {
         // TODO: send email
         return loginService.login(loginRequest.getEmail());
@@ -71,7 +69,7 @@ public class AuthController {
 
     @PostMapping(AUTH + API_VERSION + LOGIN + CONFIRM)
     public LoginConfirmResponseDto confirmLoginEmail(
-            @RequestBody LoginConfirmRequestDto loginConfirmRequest
+            @Valid @RequestBody LoginConfirmRequestDto loginConfirmRequest
     ) {
         return loginService.confirmLoginEmail(
                 loginConfirmRequest.getEmail(),
@@ -80,8 +78,12 @@ public class AuthController {
     }
 
     @PostMapping(AUTH + API_VERSION + REFRESH_TOKEN)
-    public ResponseEntity<Void> refreshToken() {
-        return ResponseEntity.ok().build();
+    public RefreshTokenResponseDto refreshToken(
+            @RequestBody RefreshTokenRequestDto refreshTokenRequest
+    ) {
+        return refreshTokenService.refreshTokens(
+                refreshTokenRequest.getRefreshToken()
+        );
     }
 }
 

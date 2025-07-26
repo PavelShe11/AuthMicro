@@ -29,13 +29,11 @@ public class RegistrationSessionEntity {
     @Column(name = "code_expires", nullable = false)
     private Instant codeExpires;
 
-    @Builder.Default
     @Column(name = "is_accepted_privacy_policy", nullable = false)
-    private Boolean acceptedPrivacyPolicy = true;
+    private Boolean acceptedPrivacyPolicy;
 
-    @Builder.Default
     @Column(name = "is_accepted_personal_data_processing", nullable = false)
-    private Boolean acceptedPersonalDataProcessing = true;
+    private Boolean acceptedPersonalDataProcessing;
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)

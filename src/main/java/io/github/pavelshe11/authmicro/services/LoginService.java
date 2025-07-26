@@ -3,9 +3,6 @@ package io.github.pavelshe11.authmicro.services;
 
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
-import io.github.pavelshe11.authmicro.api.exceptions.BadRequestException;
-import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
-import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
 import io.github.pavelshe11.authmicro.util.JwtUtil;
@@ -86,7 +83,7 @@ public class LoginService {
 
         return LoginConfirmResponseDto.builder()
                 .accessToken(accessToken)
-                .requestToken(refreshToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 }

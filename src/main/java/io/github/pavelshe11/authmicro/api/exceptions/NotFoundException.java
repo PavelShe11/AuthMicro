@@ -1,11 +1,7 @@
 package io.github.pavelshe11.authmicro.api.exceptions;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class NotFoundException extends RuntimeException {
-    public NotFoundException(String message) {
-        super(message); // вызов конструктора RuntimeException(String message)
+public class NotFoundException extends AbstractException {
+    public NotFoundException(String title, String message) {
+        super(title, message);
     }
 }

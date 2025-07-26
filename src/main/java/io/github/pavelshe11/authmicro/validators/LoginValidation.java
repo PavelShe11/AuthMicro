@@ -6,7 +6,6 @@ import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.services.EmailValidatorGrpcService;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
-import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -21,7 +20,7 @@ public class LoginValidation {
     LoginSessionRepository loginSessionRepository;
     public String validateAndTrimEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
-            throw new BadRequestException("Поле Email не может быть пустым.");
+            throw new BadRequestException("email", "Поле пустое.");
         }
         else return email.trim();
     }
@@ -37,11 +36,11 @@ public class LoginValidation {
         Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByAccountIdAndEmail(accountId, email);
 
         if (loginSessionOpt.isEmpty()) {
-            throw new InvalidCodeException("Неверный код подтверждения");
+            throw new InvalidCodeException("error", "Неверный код подтверждения");
         }
 
         if (loginSessionOpt.get().getCodeExpires().isBefore(Instant.now())) {
-            throw new CodeVerificationException("Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
+            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
         }
         return loginSessionOpt.get();
     }
@@ -49,15 +48,15 @@ public class LoginValidation {
 
     public void checkIfCodeIsValid(LoginSessionEntity session, String code, PasswordEncoder passwordEncoder) {
         if (!passwordEncoder.matches(code, session.getCode())) {
-            throw new InvalidCodeException("Неверный код подтверждения.");
+            throw new InvalidCodeException("error", "Неверный код подтверждения.");
         }
     }
 
     public void checkIfCodeInExistingSessionExpired(LoginSessionEntity loginSession) {
         if (loginSession.getCodeExpires().isAfter(Instant.now())) {
-            throw new CodeVerificationException("Код не истёк.");
+            throw new CodeVerificationException("error", "Код не истёк.");
         } else if (loginSession.getCodeExpires().isBefore(Instant.now())) {
-            throw new CodeVerificationException("Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
+            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
         }
     }
 }

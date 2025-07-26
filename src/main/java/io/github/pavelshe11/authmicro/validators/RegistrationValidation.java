@@ -19,9 +19,8 @@ public class RegistrationValidation {
 
     public String validateAndTrimEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
-            throw new BadRequestException("Поле Email не может быть пустым.");
-        }
-        else return email.trim();
+            throw new BadRequestException("email", "Поле пустое.");
+        } else return email.trim();
     }
 
     public void checkIfAccountExists(String email) {
@@ -36,16 +35,27 @@ public class RegistrationValidation {
 
     public void checkIfCodeInExistingSessionExpired(RegistrationSessionEntity registrationSession) {
         if (registrationSession.getCodeExpires().isAfter(Instant.now())) {
-            throw new CodeVerificationException("Код не истёк.");
+            throw new CodeVerificationException("error", "Код не истёк.");
         } else if (registrationSession.getCodeExpires().isBefore(Instant.now())) {
-            throw new CodeVerificationException("Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
+            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
         }
     }
 
     public void checkIfCodeIsValid(String code, RegistrationSessionEntity registrationSession, PasswordEncoder passwordEncoder) {
         if (!passwordEncoder.matches(code, registrationSession.getCode())) {
-            throw new InvalidCodeException("Неверный код подтверждения.");
+            throw new InvalidCodeException("error", "Неверный код подтверждения.");
         }
     }
 
+    public void checkIfPolicyAgreementsAcceptedOfThrow(
+            Boolean acceptedPrivacyPolicy,
+            Boolean acceptedPersonalDataProcessing) {
+
+        if (acceptedPrivacyPolicy == null || !acceptedPrivacyPolicy) {
+            throw new BadRequestException("acceptedPrivacyPolicy", "Не принято пользовательское соглашение.");
+        }
+        if (acceptedPersonalDataProcessing == null || !acceptedPersonalDataProcessing) {
+            throw new BadRequestException("acceptedPrivacyPolicy", "Не принято соглашение на обработку персональных данных.");
+        }
+    }
 }
