@@ -11,7 +11,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class RegistrationResponseDto {
-    private UUID registrationId;
     private Instant codeExpires;
     private String code;
 }

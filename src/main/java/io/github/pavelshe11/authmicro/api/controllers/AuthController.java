@@ -54,7 +54,6 @@ public class AuthController {
     public ResponseEntity<Void> registrationConfirmEmail(
             @Valid @RequestBody RegistrationConfirmRequestDto registrationConfirmRequest) {
         return registrationService.confirmEmail(
-                registrationConfirmRequest.getRegistrationId(),
                 registrationConfirmRequest.getEmail(),
                 registrationConfirmRequest.getCode());
     }

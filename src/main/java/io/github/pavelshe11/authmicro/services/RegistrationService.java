@@ -12,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -55,9 +54,9 @@ public class RegistrationService {
     }
 
 
-    public ResponseEntity<Void> confirmEmail(UUID registrationId, String email, String code) {
+    public ResponseEntity<Void> confirmEmail(String email, String code) {
         RegistrationSessionEntity registrationSession = registrationSessionRepository
-                .findById(registrationId)
+                .findByEmail(email)
                 .orElse(null);
 
         if (registrationSession == null) {
@@ -83,12 +82,12 @@ public class RegistrationService {
         registrationSession.setCodeExpires(codeExpires);
         registrationSessionRepository.save(registrationSession);
 
-        return new RegistrationResponseDto(registrationSession.getId(), codeExpires, code);
+        return new RegistrationResponseDto(codeExpires, code);
     }
 
     private RegistrationResponseDto returnNewRegistrationResponseDto(String email, String code, Instant codeExpires) {
-        RegistrationSessionEntity registrationSession;
-        registrationSession = registrationSessionRepository.save(
+        RegistrationSessionEntity registrationSession =
+                registrationSessionRepository.save(
                 RegistrationSessionEntity.builder()
                         .email(email)
                         .acceptedPrivacyPolicy(true)
@@ -99,7 +98,6 @@ public class RegistrationService {
         );
 
         return new RegistrationResponseDto(
-                registrationSession.getId(),
                 registrationSession.getCodeExpires(),
                 code
         );

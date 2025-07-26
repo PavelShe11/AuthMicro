@@ -12,8 +12,6 @@ import java.util.UUID;
 @Builder
 public class RegistrationConfirmRequestDto {
 
-    private UUID registrationId;
-
     @Email(message = "Некорректный формат Email.")
     private String email;
 
