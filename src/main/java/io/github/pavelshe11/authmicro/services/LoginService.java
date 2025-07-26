@@ -5,10 +5,12 @@ import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
+import io.github.pavelshe11.authmicro.util.CodeCache;
 import io.github.pavelshe11.authmicro.util.JwtUtil;
 import io.github.pavelshe11.authmicro.validators.LoginValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -26,6 +28,7 @@ public class LoginService {
     private final EmailValidatorGrpcService emailValidatorGrpcService;
     private final RoleResolverGrpcService roleResolverGrpcService;
     private final LoginValidation loginValidator;
+    private final CodeCache codeCache;
 
     public LoginResponseDto login(String email) {
         email = loginValidator.validateAndTrimEmail(email);
@@ -40,7 +43,11 @@ public class LoginService {
             LoginSessionEntity session = loginSessionOpt.get();
 
             if (session.getCodeExpires().isAfter(Instant.now())) {
-                return new LoginResponseDto(session.getCodeExpires(), session.getCode());
+                Optional<String> cachedCode = codeCache.get(accountId);
+
+                return cachedCode.map(code ->
+                        new LoginResponseDto(session.getCodeExpires(), code)
+                ).orElseThrow(() -> new RuntimeException("Код не получается вернуть"));
             }
 
             String newCode = codeGeneratorService.codeGenerate();
@@ -80,11 +87,19 @@ public class LoginService {
         String accessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
         String refreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
 
-        loginSessionRepository.delete(session);
+        Instant accessTokenExpires = jwtUtil.extractExpiration(accessToken);
+        Instant refreshTokenExpires = jwtUtil.extractExpiration(refreshToken);
+
+        session.setAccessTokenExpires(accessTokenExpires);
+        session.setRefreshTokenExpires(refreshTokenExpires);
+
+        loginSessionRepository.save(session);
 
         return LoginConfirmResponseDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .accessTokenExpires(accessTokenExpires)
+                .refreshTokenExpires(refreshTokenExpires)
                 .build();
     }
 }

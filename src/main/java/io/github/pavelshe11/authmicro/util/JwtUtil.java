@@ -6,12 +6,14 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.lang.reflect.MalformedParameterizedTypeException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 
@@ -19,9 +21,11 @@ import java.util.function.Function;
 public class JwtUtil {
 
     private final SecretKey key;
+    private final JwtDecoder jwtDecoder;
 
-    public JwtUtil(SecretKey key) {
+    public JwtUtil(SecretKey key, JwtDecoder jwtDecoder) {
         this.key = key;
+        this.jwtDecoder = jwtDecoder;
     }
 
     public String generateAccessToken(UUID accountId, boolean isAdmin) {
@@ -48,5 +52,10 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + time)) // 5 days expiration
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public Instant extractExpiration(String token) {
+        Jwt decodedJwt = jwtDecoder.decode(token);
+        return decodedJwt.getExpiresAt();
     }
 }
