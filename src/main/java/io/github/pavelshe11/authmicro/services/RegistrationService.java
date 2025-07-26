@@ -42,7 +42,7 @@ public class RegistrationService {
                 .orElse(null);
 
         if (registrationSession != null) {
-            registrationValidator.checkIfCodeInExistingSessionExpired(registrationSession);
+            registrationValidator.ensureCodeIsExpired(registrationSession);
 
             return refreshCodeAndReturnRegistrationResponseDto(
                     registrationSession,
@@ -65,7 +65,7 @@ public class RegistrationService {
 
         registrationValidator.checkIfCodeIsValid(code, registrationSession, passwordEncoder);
 
-        registrationValidator.checkIfCodeInExistingSessionExpired(registrationSession);
+        registrationValidator.ensureCodeIsNotExpired(registrationSession);
 
         boolean isAccountCreated = accountCreationRequestGrpcService.createAccount(email);
 

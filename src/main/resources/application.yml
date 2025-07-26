@@ -22,7 +22,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        default_schema: auth
 
 management:
   endpoints:
@@ -45,6 +44,13 @@ grpc:
     role-resolver-service:
       address: static://networking-service:${GRPC_PORT}
       negotiation-type: plaintext
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
+    io.jsonwebtoken: DEBUG
+    io.github.pavelshe11.authmicro: DEBUG
 
 server:
   port: ${HTTP_PORT}

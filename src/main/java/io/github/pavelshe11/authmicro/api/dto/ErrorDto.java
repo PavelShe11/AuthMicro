@@ -19,6 +19,6 @@ public class ErrorDto {
     @JsonProperty("error_description")
     private String errorDescription;
 
-    @JsonProperty("error_description")
+    @JsonProperty("detailed_errors")
     private List<FieldErrorDto> detailedErrors;
 }
