@@ -5,13 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorDto {
+public class CodeErrorDto {
     private String error;
-    private List<FieldErrorDto> detailedErrors;
+    private String codeError;
 }

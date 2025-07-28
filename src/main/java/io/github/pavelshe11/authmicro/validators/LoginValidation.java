@@ -1,7 +1,8 @@
 package io.github.pavelshe11.authmicro.validators;
 
-import io.github.pavelshe11.authmicro.api.exceptions.BadRequestException;
+import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
 import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.exceptions.FieldValidationException;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.services.EmailValidatorGrpcService;
@@ -11,8 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,7 +26,9 @@ public class LoginValidation {
     private final LoginSessionRepository loginSessionRepository;
     public String validateAndTrimEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
-            throw new BadRequestException("email", "Поле пустое.");
+            List<FieldErrorDto> errors = List.of(new FieldErrorDto("email",
+                    "Поле пустое"));
+            throw new FieldValidationException(errors);
         }
         else return email.trim();
     }

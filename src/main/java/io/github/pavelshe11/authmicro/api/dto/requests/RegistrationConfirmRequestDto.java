@@ -17,4 +17,8 @@ public class RegistrationConfirmRequestDto {
 
     private String code;
 
+    private Boolean acceptedPrivacyPolicy;
+
+    private Boolean acceptedPersonalDataProcessing;
+
 }

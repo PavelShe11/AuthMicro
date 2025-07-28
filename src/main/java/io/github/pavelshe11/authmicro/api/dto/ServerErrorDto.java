@@ -1,17 +1,13 @@
 package io.github.pavelshe11.authmicro.api.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class ErrorDto {
+@NoArgsConstructor
+public class ServerErrorDto {
     private String error;
-    private List<FieldErrorDto> detailedErrors;
+
 }

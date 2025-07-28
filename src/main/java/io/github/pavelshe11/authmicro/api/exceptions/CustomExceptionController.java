@@ -1,48 +1,66 @@
 package io.github.pavelshe11.authmicro.api.exceptions;
 
+import io.github.pavelshe11.authmicro.api.dto.CodeErrorDto;
 import io.github.pavelshe11.authmicro.api.dto.ErrorDto;
 import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
+import io.github.pavelshe11.authmicro.api.dto.ServerErrorDto;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RequiredArgsConstructor
 @RestControllerAdvice
 public class CustomExceptionController {
 
+    @ExceptionHandler(FieldValidationException.class)
+    public ResponseEntity<ErrorDto> handleFieldValidationExceptions(FieldValidationException ex) {
+        ErrorDto response = new ErrorDto("Ошибка регистрации", ex.getErrors());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ServerErrorDto> handleGeneralExceptions(Exception ex) {
+        ServerErrorDto response = new ServerErrorDto(ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
+
     @ExceptionHandler(AbstractException.class)
-    public ResponseEntity<ErrorDto> handleAbstractException(AbstractException ex) {
-        return ResponseEntity.badRequest().body(
-                ErrorDto.builder()
-                        .error(ex.getTitle())
-                        .errorDescription(ex.getMessage())
-                        .build()
-        );
+    public ResponseEntity<Map<String, String>> handleAbstractExceptions(AbstractException ex) {
+        Map<String, String> errorBody = new HashMap<>();
+
+        errorBody.put("error", ex.getTitle());
+        errorBody.put("codeError", ex.getMessage());
+
+        return ResponseEntity
+                .status(ex.getStatus())
+                .body(errorBody);
     }
-    @ExceptionHandler(ServerAnswerException.class)
-    public ResponseEntity<ErrorDto> handleServerError(ServerAnswerException ex) {
-        return ResponseEntity.status(500).body(
-                ErrorDto.builder()
-                        .error(ex.getMessage())
-                        .build());
-    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDto> handleValidationException(MethodArgumentNotValidException ex) {
-        List<FieldErrorDto> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> new FieldErrorDto(error.getField(), error.getDefaultMessage()))
+    public ResponseEntity<ErrorDto> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex
+    ) {
+        List<FieldErrorDto> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> new FieldErrorDto(error.getField(),
+                        error.getDefaultMessage()))
                 .toList();
 
-        return ResponseEntity.badRequest().body(
-                ErrorDto.builder()
-                        .error("Ошибка регистрации")
-                        .detailedErrors(fieldErrors)
-                        .build()
-        );
+        ErrorDto response = new ErrorDto("Ошибка регистрации", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

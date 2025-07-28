@@ -55,8 +55,7 @@ public class AuthController {
     public ResponseEntity<Void> registrationConfirmEmail(
             @Valid @RequestBody RegistrationConfirmRequestDto registrationConfirmRequest) {
         return registrationService.confirmEmail(
-                registrationConfirmRequest.getEmail(),
-                registrationConfirmRequest.getCode());
+                registrationConfirmRequest);
     }
 
     @PostMapping(AUTH + API_VERSION + LOGIN + SEND_CODE)

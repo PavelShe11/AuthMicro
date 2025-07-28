@@ -66,6 +66,8 @@ public class LoginService {
                     .email(email)
                     .code(passwordEncoder.encode(code))
                     .codeExpires(codeExpires)
+                    .accessTokenExpires(Instant.EPOCH)
+                    .refreshTokenExpires(Instant.EPOCH)
                     .build();
             loginSessionRepository.save(loginSession);
             return new LoginResponseDto(codeExpires, code);

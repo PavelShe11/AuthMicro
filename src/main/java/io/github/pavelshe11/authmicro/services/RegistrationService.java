@@ -1,5 +1,6 @@
 package io.github.pavelshe11.authmicro.services;
 
+import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
@@ -26,16 +27,16 @@ public class RegistrationService {
 
         String email = registrationRequest.getEmail();
 
-        email = registrationValidator.validateAndTrimEmail(email);
+        registrationValidator.validateRegistrationData(email,
+                registrationRequest.getAcceptedPrivacyPolicy(),
+                registrationRequest.getAcceptedPersonalDataProcessing());
+
+        email = registrationValidator.getTrimmedEmail(email);
+
         registrationValidator.checkIfAccountExists(email);
 
         String code = registrationGeneratorService.codeGenerate();
         Instant codeExpires = registrationGeneratorService.codeExpiresGenerate();
-
-        registrationValidator.checkIfPolicyAgreementsAcceptedOfThrow(
-                registrationRequest.getAcceptedPrivacyPolicy(),
-                registrationRequest.getAcceptedPersonalDataProcessing()
-        );
 
         RegistrationSessionEntity registrationSession = registrationSessionRepository
                 .findByEmail(email)
@@ -54,7 +55,17 @@ public class RegistrationService {
     }
 
 
-    public ResponseEntity<Void> confirmEmail(String email, String code) {
+    public ResponseEntity<Void> confirmEmail(RegistrationConfirmRequestDto registrationConfirmRequest) {
+
+        String email = registrationConfirmRequest.getEmail();
+        String code = registrationConfirmRequest.getCode();
+
+        registrationValidator.validateRegistrationData(email,
+                registrationConfirmRequest.getAcceptedPrivacyPolicy(),
+                registrationConfirmRequest.getAcceptedPersonalDataProcessing());
+
+        email = registrationValidator.getTrimmedEmail(email);
+
         RegistrationSessionEntity registrationSession = registrationSessionRepository
                 .findByEmail(email)
                 .orElse(null);
