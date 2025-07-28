@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CodeErrorDto {
     private String error;
-    private String codeError;
+    private String type ;
 }

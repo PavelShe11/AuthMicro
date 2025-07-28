@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package= "io.github.pavelshe11.authmicro.grpc";
+option java_outer_classname = "CheckIsDomainExistsProto";
+
+service CheckIsDomainExistsService {
+    rpc CheckIsDomainExists (CheckIsDomainExistsRequest) returns (CheckIsDomainExistsResponse);
+}
+
+message CheckIsDomainExistsRequest {
+    string domain = 1;
+}
+
+message CheckIsDomainExistsResponse {
+    bool exists = 1;
+}

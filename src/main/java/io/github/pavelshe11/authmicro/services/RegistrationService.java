@@ -3,6 +3,7 @@ package io.github.pavelshe11.authmicro.services;
 import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
+import io.github.pavelshe11.authmicro.api.exceptions.InvalidInstituteException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RegistrationSessionRepository;
@@ -22,6 +23,7 @@ public class RegistrationService {
     private final CodeGeneratorService registrationGeneratorService;
     private final AccountCreationRequestGrpcService accountCreationRequestGrpcService;
     private final RegistrationValidation registrationValidator;
+    private final CheckIsDomainExistsRequestGrpcService checkIsDomainExistsRequestGrpcService;
 
     public RegistrationResponseDto register(RegistrationRequestDto registrationRequest) {
 
@@ -32,6 +34,14 @@ public class RegistrationService {
                 registrationRequest.getAcceptedPersonalDataProcessing());
 
         email = registrationValidator.getTrimmedEmail(email);
+        String domain = email.substring(email.indexOf("@")+1);
+
+        boolean domainExists = checkIsDomainExistsRequestGrpcService.checkIsDomainExists(domain);
+
+        if(!domainExists) {
+            throw new InvalidInstituteException("error", "Учебное заведение с доменом "
+                    + domain + " не зарегистрировано в Communicator");
+        }
 
         registrationValidator.checkIfAccountExists(email);
 

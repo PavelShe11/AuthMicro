@@ -1,7 +1,9 @@
 package io.github.pavelshe11.authmicro.api.exceptions;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 public abstract class AbstractException extends RuntimeException{
     private final String title;
     private final HttpStatus status;
@@ -12,11 +14,4 @@ public abstract class AbstractException extends RuntimeException{
         this.status = status;
     }
 
-    public String getTitle() {
-        return title;
-    }
-    
-    public HttpStatus getStatus() {
-        return status;
-    }
 }

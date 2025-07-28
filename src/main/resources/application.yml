@@ -44,6 +44,9 @@ grpc:
     role-resolver-service:
       address: static://networking-service:${GRPC_PORT}
       negotiation-type: plaintext
+    check-domain-service:
+      address: static://networking-service:${GRPC_PORT}
+      negotiation-type: plaintext
 
 logging:
   level:

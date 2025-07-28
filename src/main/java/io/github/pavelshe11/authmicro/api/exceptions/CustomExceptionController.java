@@ -1,10 +1,8 @@
 package io.github.pavelshe11.authmicro.api.exceptions;
 
-import io.github.pavelshe11.authmicro.api.dto.CodeErrorDto;
 import io.github.pavelshe11.authmicro.api.dto.ErrorDto;
 import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
 import io.github.pavelshe11.authmicro.api.dto.ServerErrorDto;
-import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +39,7 @@ public class CustomExceptionController {
         Map<String, String> errorBody = new HashMap<>();
 
         errorBody.put("error", ex.getTitle());
-        errorBody.put("codeError", ex.getMessage());
+        errorBody.put("type", ex.getMessage());
 
         return ResponseEntity
                 .status(ex.getStatus())
