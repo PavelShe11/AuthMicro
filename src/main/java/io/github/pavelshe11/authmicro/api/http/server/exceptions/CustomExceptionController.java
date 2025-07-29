@@ -2,7 +2,6 @@ package io.github.pavelshe11.authmicro.api.http.server.exceptions;
 
 import io.github.pavelshe11.authmicro.api.http.server.dto.ErrorDto;
 import io.github.pavelshe11.authmicro.api.http.server.dto.FieldErrorDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.ServerErrorDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +25,10 @@ public class CustomExceptionController {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ServerErrorDto> handleGeneralExceptions(Exception ex) {
-        ServerErrorDto response = new ServerErrorDto(ex.getMessage());
+    public ResponseEntity<ErrorDto> handleGeneralExceptions(Exception ex) {
+        ErrorDto response = ErrorDto.builder()
+                .error(ex.getMessage())
+                .build();
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -39,7 +40,6 @@ public class CustomExceptionController {
         Map<String, String> errorBody = new HashMap<>();
 
         errorBody.put("error", ex.getTitle());
-        errorBody.put("type", ex.getMessage());
 
         return ResponseEntity
                 .status(ex.getStatus())

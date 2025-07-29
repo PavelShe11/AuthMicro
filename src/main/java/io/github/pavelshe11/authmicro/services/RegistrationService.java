@@ -20,7 +20,6 @@ import java.time.Instant;
 @Service
 @RequiredArgsConstructor
 public class RegistrationService {
-    private final PasswordEncoder passwordEncoder;
     private final RegistrationSessionRepository registrationSessionRepository;
     private final CodeGeneratorService registrationGeneratorService;
     private final AccountCreationRequestGrpc accountCreationRequestGrpc;
@@ -86,7 +85,7 @@ public class RegistrationService {
             return ResponseEntity.ok().build();
         }
 
-        registrationValidator.checkIfCodeIsValid(code, registrationSession, passwordEncoder);
+        registrationValidator.checkIfCodeIsValid(code, registrationSession);
 
         registrationValidator.ensureCodeIsNotExpired(registrationSession);
 
@@ -101,7 +100,7 @@ public class RegistrationService {
 
 
     private RegistrationResponseDto refreshCodeAndReturnRegistrationResponseDto(RegistrationSessionEntity registrationSession, String code, Instant codeExpires) {
-        registrationSession.setCode(registrationGeneratorService.CodeHash(code));
+        registrationSession.setCode(code);
         registrationSession.setCodeExpires(codeExpires);
         registrationSessionRepository.save(registrationSession);
 
@@ -115,7 +114,7 @@ public class RegistrationService {
                         .email(email)
                         .acceptedPrivacyPolicy(true)
                         .acceptedPersonalDataProcessing(true)
-                        .code(registrationGeneratorService.CodeHash(code))
+                        .code(code)
                         .codeExpires(codeExpires)
                         .build()
         );

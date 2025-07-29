@@ -7,7 +7,6 @@ import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginConfirm
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
-import io.github.pavelshe11.authmicro.util.CodeCache;
 import io.github.pavelshe11.authmicro.util.JwtUtil;
 import io.github.pavelshe11.authmicro.validators.LoginValidation;
 import lombok.RequiredArgsConstructor;
@@ -22,19 +21,18 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class LoginService {
-    private final PasswordEncoder passwordEncoder;
     private final LoginSessionRepository loginSessionRepository;
     private final CodeGeneratorService codeGeneratorService;
     private final JwtUtil jwtUtil;
     private final EmailValidatorGrpc emailValidatorGrpc;
     private final RoleResolverGrpc roleResolverGrpc;
     private final LoginValidation loginValidator;
-    private final CodeCache codeCache;
 
     public LoginResponseDto login(String email) {
         email = loginValidator.validateAndTrimEmail(email);
 
         Optional<String> accountIdOpt = emailValidatorGrpc.getAccountIdIfExists(email);
+        loginValidator.validateAccountIdOrThrow(accountIdOpt);
 
         UUID accountId = UUID.fromString(accountIdOpt.get());
 
@@ -43,18 +41,10 @@ public class LoginService {
         if (loginSessionOpt.isPresent()) {
             LoginSessionEntity session = loginSessionOpt.get();
 
-            if (session.getCodeExpires().isAfter(Instant.now())) {
-                Optional<String> cachedCode = codeCache.get(accountId);
-
-                return cachedCode.map(code ->
-                        new LoginResponseDto(session.getCodeExpires(), code)
-                ).orElseThrow(() -> new RuntimeException("Код не получается вернуть"));
-            }
-
             String newCode = codeGeneratorService.codeGenerate();
             Instant newCodeExpires = codeGeneratorService.codeExpiresGenerate();
 
-            session.setCode(passwordEncoder.encode(newCode));
+            session.setCode(newCode);
             session.setCodeExpires(newCodeExpires);
             loginSessionRepository.save(session);
 
@@ -65,7 +55,7 @@ public class LoginService {
             LoginSessionEntity loginSession = LoginSessionEntity.builder()
                     .accountId(accountId)
                     .email(email)
-                    .code(passwordEncoder.encode(code))
+                    .code(code)
                     .codeExpires(codeExpires)
                     .build();
             loginSessionRepository.save(loginSession);
@@ -80,7 +70,7 @@ public class LoginService {
 
         LoginSessionEntity session = loginValidator.getValidLoginSessionOrThrow(accountId, email);
 
-        loginValidator.checkIfCodeIsValid(session, code, passwordEncoder);
+        loginValidator.checkIfCodeIsValid(session, code);
         loginValidator.ensureCodeIsNotExpired(session);
 
         boolean isAdmin = roleResolverGrpc.isAdmin(accountId);

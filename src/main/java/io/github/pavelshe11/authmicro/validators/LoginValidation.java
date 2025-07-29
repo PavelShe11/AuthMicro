@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,15 +54,9 @@ public class LoginValidation {
     }
 
 
-    public void checkIfCodeIsValid(LoginSessionEntity session, String code, PasswordEncoder passwordEncoder) {
-        if (!passwordEncoder.matches(code, session.getCode())) {
+    public void checkIfCodeIsValid(LoginSessionEntity session, String code) {
+        if (!(Objects.equals(code, session.getCode()))) {
             throw new InvalidCodeException("error", "Неверный код подтверждения.");
-        }
-    }
-
-    public void ensureCodeIsExpired(LoginSessionEntity session) {
-        if (session.getCodeExpires().isAfter(Instant.now())) {
-            throw new CodeVerificationException("error", "Код еще не истёк.");
         }
     }
 
@@ -71,4 +66,9 @@ public class LoginValidation {
         }
     }
 
+    public void validateAccountIdOrThrow(Optional<String> accountIdOpt) {
+        if (accountIdOpt.isEmpty())
+            throw new ServerAnswerException("Сервер не отвечает.");
+
+    }
 }

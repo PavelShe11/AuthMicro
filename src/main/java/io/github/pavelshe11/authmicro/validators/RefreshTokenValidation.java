@@ -17,7 +17,6 @@ public class RefreshTokenValidation {
     private final JwtDecoder jwtDecoder;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
     public Jwt getDecodedTokenOrThrow(String refreshToken) {
-        Jwt decodedToken;
         try {
             return jwtDecoder.decode(refreshToken);
         } catch (JwtException e) {

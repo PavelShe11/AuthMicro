@@ -11,15 +11,10 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class CodeGeneratorService {
-    private final PasswordEncoder passwordEncoder;
 
     public String codeGenerate() {
         String code = String.format("%06d", new Random().nextInt(1000000));
         return code;
-    }
-
-    public String CodeHash(String code) {
-        return passwordEncoder.encode(code);
     }
 
     public Instant codeExpiresGenerate() {

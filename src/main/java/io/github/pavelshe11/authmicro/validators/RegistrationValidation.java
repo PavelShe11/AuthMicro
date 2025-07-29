@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -67,8 +68,8 @@ public class RegistrationValidation {
         }
     }
 
-    public void checkIfCodeIsValid(String code, RegistrationSessionEntity registrationSession, PasswordEncoder passwordEncoder) {
-        if (!passwordEncoder.matches(code, registrationSession.getCode())) {
+    public void checkIfCodeIsValid(String code, RegistrationSessionEntity registrationSession) {
+        if (!(Objects.equals(code, registrationSession.getCode()))) {
             throw new InvalidCodeException("error", "Неверный код подтверждения.");
         }
     }
