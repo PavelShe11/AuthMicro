@@ -28,15 +28,8 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/v1/registration/confirmEmail").permitAll()
                                 .requestMatchers("/auth/v1/login/sendCodeEmail").permitAll()
                                 .requestMatchers("/auth/v1/login/confirmEmail").permitAll()
-                                .requestMatchers("/actuator/**").hasRole("admin")
+                                .requestMatchers("/actuator/**").permitAll()
                                 .requestMatchers("/auth/v1/refreshToken").authenticated()
-
-                                // for test
-                                .requestMatchers("/test/public").permitAll()
-                                .requestMatchers("/test/user").authenticated()
-                                .requestMatchers("/test/**").hasRole("admin")
-                                //
-
                                 .anyRequest().authenticated()
                 ).sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
