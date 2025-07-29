@@ -31,12 +31,6 @@ public class LoginSessionEntity {
     @Column(name = "code_expires", nullable = false)
     private Instant codeExpires;
 
-    @Column(name = "access_token_expires", nullable = false)
-    private Instant accessTokenExpires;
-
-    @Column(name = "refresh_token_expires", nullable = false)
-    private Instant refreshTokenExpires;
-
     @Builder.Default
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();

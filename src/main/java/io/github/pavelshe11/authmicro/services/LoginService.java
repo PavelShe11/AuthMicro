@@ -1,8 +1,10 @@
 package io.github.pavelshe11.authmicro.services;
 
 
-import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
-import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
+import io.github.pavelshe11.authmicro.api.grpc.client.EmailValidatorGrpc;
+import io.github.pavelshe11.authmicro.api.grpc.client.RoleResolverGrpc;
+import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginConfirmResponseDto;
+import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
 import io.github.pavelshe11.authmicro.util.CodeCache;
@@ -10,7 +12,6 @@ import io.github.pavelshe11.authmicro.util.JwtUtil;
 import io.github.pavelshe11.authmicro.validators.LoginValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -25,15 +26,15 @@ public class LoginService {
     private final LoginSessionRepository loginSessionRepository;
     private final CodeGeneratorService codeGeneratorService;
     private final JwtUtil jwtUtil;
-    private final EmailValidatorGrpcService emailValidatorGrpcService;
-    private final RoleResolverGrpcService roleResolverGrpcService;
+    private final EmailValidatorGrpc emailValidatorGrpc;
+    private final RoleResolverGrpc roleResolverGrpc;
     private final LoginValidation loginValidator;
     private final CodeCache codeCache;
 
     public LoginResponseDto login(String email) {
         email = loginValidator.validateAndTrimEmail(email);
 
-        Optional<String> accountIdOpt = emailValidatorGrpcService.getAccountIdIfExists(email);
+        Optional<String> accountIdOpt = emailValidatorGrpc.getAccountIdIfExists(email);
 
         UUID accountId = UUID.fromString(accountIdOpt.get());
 
@@ -66,8 +67,6 @@ public class LoginService {
                     .email(email)
                     .code(passwordEncoder.encode(code))
                     .codeExpires(codeExpires)
-                    .accessTokenExpires(Instant.EPOCH)
-                    .refreshTokenExpires(Instant.EPOCH)
                     .build();
             loginSessionRepository.save(loginSession);
             return new LoginResponseDto(codeExpires, code);
@@ -84,16 +83,13 @@ public class LoginService {
         loginValidator.checkIfCodeIsValid(session, code, passwordEncoder);
         loginValidator.ensureCodeIsNotExpired(session);
 
-        boolean isAdmin = roleResolverGrpcService.isAdmin(accountId);
+        boolean isAdmin = roleResolverGrpc.isAdmin(accountId);
 
         String accessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
         String refreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
 
         Instant accessTokenExpires = jwtUtil.extractExpiration(accessToken);
         Instant refreshTokenExpires = jwtUtil.extractExpiration(refreshToken);
-
-        session.setAccessTokenExpires(accessTokenExpires);
-        session.setRefreshTokenExpires(refreshTokenExpires);
 
         loginSessionRepository.save(session);
 

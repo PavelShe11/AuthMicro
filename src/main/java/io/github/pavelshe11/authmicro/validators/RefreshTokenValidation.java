@@ -1,7 +1,7 @@
 package io.github.pavelshe11.authmicro.validators;
 
-import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
-import io.github.pavelshe11.authmicro.api.exceptions.InvalidTokenException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidTokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;

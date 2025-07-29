@@ -1,6 +1,6 @@
 package io.github.pavelshe11.authmicro.services;
 
-import io.github.pavelshe11.authmicro.api.dto.responses.RefreshTokenResponseDto;
+import io.github.pavelshe11.authmicro.api.http.server.dto.responses.RefreshTokenResponseDto;
 import io.github.pavelshe11.authmicro.store.entities.RefreshTokenSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import io.github.pavelshe11.authmicro.util.JwtUtil;

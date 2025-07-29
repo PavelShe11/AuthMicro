@@ -1,11 +1,11 @@
 package io.github.pavelshe11.authmicro.validators;
 
-import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
-import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
-import io.github.pavelshe11.authmicro.api.exceptions.FieldValidationException;
-import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
-import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
-import io.github.pavelshe11.authmicro.services.EmailValidatorGrpcService;
+import io.github.pavelshe11.authmicro.api.http.server.dto.FieldErrorDto;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.FieldValidationException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidCodeException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.ServerAnswerException;
+import io.github.pavelshe11.authmicro.api.grpc.client.EmailValidatorGrpc;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +18,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class RegistrationValidation {
-    private final EmailValidatorGrpcService emailValidatorGrpcService;
+    private final EmailValidatorGrpc emailValidatorGrpc;
 
     public void validateRegistrationData(String email,
                                          Boolean acceptedPrivacyPolicy,
@@ -47,7 +47,7 @@ public class RegistrationValidation {
 
     public void checkIfAccountExists(String email) {
         try {
-            if (emailValidatorGrpcService.isAccountExists(email)) {
+            if (emailValidatorGrpc.isAccountExists(email)) {
                 throw new ServerAnswerException("Сервер не отвечает.");
             }
         } catch (Exception e) {

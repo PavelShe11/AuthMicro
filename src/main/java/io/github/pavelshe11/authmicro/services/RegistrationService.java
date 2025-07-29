@@ -1,10 +1,12 @@
 package io.github.pavelshe11.authmicro.services;
 
-import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
-import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
-import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
-import io.github.pavelshe11.authmicro.api.exceptions.InvalidInstituteException;
-import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
+import io.github.pavelshe11.authmicro.api.grpc.client.AccountCreationRequestGrpc;
+import io.github.pavelshe11.authmicro.api.grpc.client.CheckIsDomainExistsRequestGrpc;
+import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RegistrationConfirmRequestDto;
+import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RegistrationRequestDto;
+import io.github.pavelshe11.authmicro.api.http.server.dto.responses.RegistrationResponseDto;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidInstituteException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RegistrationSessionRepository;
 import io.github.pavelshe11.authmicro.validators.RegistrationValidation;
@@ -21,9 +23,9 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final RegistrationSessionRepository registrationSessionRepository;
     private final CodeGeneratorService registrationGeneratorService;
-    private final AccountCreationRequestGrpcService accountCreationRequestGrpcService;
+    private final AccountCreationRequestGrpc accountCreationRequestGrpc;
     private final RegistrationValidation registrationValidator;
-    private final CheckIsDomainExistsRequestGrpcService checkIsDomainExistsRequestGrpcService;
+    private final CheckIsDomainExistsRequestGrpc checkIsDomainExistsRequestGrpc;
 
     public RegistrationResponseDto register(RegistrationRequestDto registrationRequest) {
 
@@ -36,7 +38,7 @@ public class RegistrationService {
         email = registrationValidator.getTrimmedEmail(email);
         String domain = email.substring(email.indexOf("@")+1);
 
-        boolean domainExists = checkIsDomainExistsRequestGrpcService.checkIsDomainExists(domain);
+        boolean domainExists = checkIsDomainExistsRequestGrpc.checkIsDomainExists(domain);
 
         if(!domainExists) {
             throw new InvalidInstituteException("error", "Учебное заведение с доменом "
@@ -88,7 +90,7 @@ public class RegistrationService {
 
         registrationValidator.ensureCodeIsNotExpired(registrationSession);
 
-        boolean isAccountCreated = accountCreationRequestGrpcService.createAccount(email);
+        boolean isAccountCreated = accountCreationRequestGrpc.createAccount(email);
 
         if (!isAccountCreated) {
             throw new ServerAnswerException("Сервер не отвечает.");

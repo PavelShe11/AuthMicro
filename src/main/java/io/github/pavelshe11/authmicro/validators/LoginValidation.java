@@ -1,18 +1,17 @@
 package io.github.pavelshe11.authmicro.validators;
 
-import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
-import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
-import io.github.pavelshe11.authmicro.api.exceptions.FieldValidationException;
-import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
-import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
-import io.github.pavelshe11.authmicro.services.EmailValidatorGrpcService;
+import io.github.pavelshe11.authmicro.api.http.server.dto.FieldErrorDto;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.FieldValidationException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidCodeException;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.ServerAnswerException;
+import io.github.pavelshe11.authmicro.api.grpc.client.EmailValidatorGrpc;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Component
 public class LoginValidation {
-    private final EmailValidatorGrpcService emailValidatorGrpcService;
+    private final EmailValidatorGrpc emailValidatorGrpc;
     private final LoginSessionRepository loginSessionRepository;
     public String validateAndTrimEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
@@ -34,7 +33,7 @@ public class LoginValidation {
     }
 
     public UUID getAccountIdByEmailOrThrow(String email) {
-        return emailValidatorGrpcService.getAccountIdIfExists(email)
+        return emailValidatorGrpc.getAccountIdIfExists(email)
                 .map(UUID::fromString)
                 .orElseThrow(() -> new ServerAnswerException("Сервер не отвечает."));
 
