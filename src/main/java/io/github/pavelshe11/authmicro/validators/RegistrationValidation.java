@@ -4,57 +4,20 @@ import io.github.pavelshe11.authmicro.api.http.server.dto.FieldErrorDto;
 import io.github.pavelshe11.authmicro.api.http.server.exceptions.CodeVerificationException;
 import io.github.pavelshe11.authmicro.api.http.server.exceptions.FieldValidationException;
 import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidCodeException;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.ServerAnswerException;
-import io.github.pavelshe11.authmicro.api.grpc.client.EmailValidatorGrpc;
+import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
+import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
 public class RegistrationValidation {
-    private final EmailValidatorGrpc emailValidatorGrpc;
-
-    public void validateRegistrationData(String email,
-                                         Boolean acceptedPrivacyPolicy,
-                                         Boolean acceptedPersonalDataProcessing
-    ) {
-        List<FieldErrorDto> errors = new ArrayList<>();
-
-        if (email == null || email.trim().isEmpty()) {
-            errors.add(new FieldErrorDto("email", "Поле пустое"));
-        }
-
-        if (acceptedPrivacyPolicy == null || !acceptedPrivacyPolicy) {
-            errors.add(new FieldErrorDto("acceptedPrivacyPolicy", "Не принято пользовательское соглашение."));
-        }
-
-        // data processing
-        if (acceptedPersonalDataProcessing == null || !acceptedPersonalDataProcessing) {
-            errors.add(new FieldErrorDto("acceptedPersonalDataProcessing", "Не принято соглашение на обработку персональных данных."));
-        }
-
-        if (!errors.isEmpty()) {
-            throw new FieldValidationException(errors);
-        }
-
-    }
-
-    public void checkIfAccountExists(String email) {
-        try {
-            if (emailValidatorGrpc.isAccountExists(email)) {
-                throw new ServerAnswerException("Сервер не отвечает.");
-            }
-        } catch (Exception e) {
-            throw new ServerAnswerException("Сервер не отвечает.");
-        }
-    }
+    private final AccountValidatorGrpc accountValidatorGrpc;
 
     public void ensureCodeIsExpired(RegistrationSessionEntity session) {
         if (session.getCodeExpires().isAfter(Instant.now())) {
@@ -76,5 +39,16 @@ public class RegistrationValidation {
 
     public String getTrimmedEmail(String email) {
         return email.trim();
+    }
+
+    public void validateUserDataOrThrow(AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse) {
+        if (!accountValidatorResponse.getAccept()) {
+            List<FieldErrorDto> fieldErrors = accountValidatorResponse.getDetailedErrorsList().stream()
+                    .map(err -> new FieldErrorDto(err.getField(), err.getMessage()))
+                    .toList();
+
+            throw new FieldValidationException(fieldErrors);
+
+        }
     }
 }

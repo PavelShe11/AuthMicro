@@ -35,8 +35,8 @@ management:
 
 grpc:
   client:
-    email-validator-service:
-      address: ${EMAIL_VALIDATOR_SERVICE_ADDRESS}
+    account-validator-service:
+      address: ${ACCOUNT_VALIDATOR_SERVICE_ADDRESS}
       negotiation-type: plaintext
 
     account-creation-service:
@@ -45,10 +45,6 @@ grpc:
 
     role-resolver-service:
       address: ${ROLE_RESOLVER_SERVICE_ADDRESS}
-      negotiation-type: plaintext
-
-    check-domain-service:
-      address: ${CHECK_DOMAIN_SERVICE_ADDRESS}
       negotiation-type: plaintext
 
 logging:

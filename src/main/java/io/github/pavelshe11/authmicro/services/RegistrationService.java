@@ -1,21 +1,21 @@
 package io.github.pavelshe11.authmicro.services;
 
 import io.github.pavelshe11.authmicro.api.grpc.client.AccountCreationRequestGrpc;
-import io.github.pavelshe11.authmicro.api.grpc.client.CheckIsDomainExistsRequestGrpc;
+import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RegistrationConfirmRequestDto;
 import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RegistrationRequestDto;
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.RegistrationResponseDto;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidInstituteException;
 import io.github.pavelshe11.authmicro.api.http.server.exceptions.ServerAnswerException;
+import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RegistrationSessionRepository;
 import io.github.pavelshe11.authmicro.validators.RegistrationValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -24,27 +24,23 @@ public class RegistrationService {
     private final CodeGeneratorService registrationGeneratorService;
     private final AccountCreationRequestGrpc accountCreationRequestGrpc;
     private final RegistrationValidation registrationValidator;
-    private final CheckIsDomainExistsRequestGrpc checkIsDomainExistsRequestGrpc;
+    private final AccountValidatorGrpc accountValidatorGrpc;
 
     public RegistrationResponseDto register(RegistrationRequestDto registrationRequest) {
 
         String email = registrationRequest.getEmail();
-
-        registrationValidator.validateRegistrationData(email,
-                registrationRequest.getAcceptedPrivacyPolicy(),
-                registrationRequest.getAcceptedPersonalDataProcessing());
-
         email = registrationValidator.getTrimmedEmail(email);
-        String domain = email.substring(email.indexOf("@")+1);
 
-        boolean domainExists = checkIsDomainExistsRequestGrpc.checkIsDomainExists(domain);
+        AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse
+                = accountValidatorGrpc.validateUserData(
+                Map.of(
+                        "email", registrationRequest.getEmail(),
+                        "acceptedPrivacyPolicy", registrationRequest.getAcceptedPrivacyPolicy(),
+                        "acceptedPersonalDataProcessing", registrationRequest.getAcceptedPersonalDataProcessing()
+                )
+        );
 
-        if(!domainExists) {
-            throw new InvalidInstituteException("error", "Учебное заведение с доменом "
-                    + domain + " не зарегистрировано в Communicator");
-        }
-
-        registrationValidator.checkIfAccountExists(email);
+        registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
 
         String code = registrationGeneratorService.codeGenerate();
         Instant codeExpires = registrationGeneratorService.codeExpiresGenerate();
@@ -71,11 +67,18 @@ public class RegistrationService {
         String email = registrationConfirmRequest.getEmail();
         String code = registrationConfirmRequest.getCode();
 
-        registrationValidator.validateRegistrationData(email,
-                registrationConfirmRequest.getAcceptedPrivacyPolicy(),
-                registrationConfirmRequest.getAcceptedPersonalDataProcessing());
-
         email = registrationValidator.getTrimmedEmail(email);
+
+        AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse
+                = accountValidatorGrpc.validateUserData(
+                Map.of(
+                        "email", registrationConfirmRequest.getEmail(),
+                        "acceptedPrivacyPolicy", registrationConfirmRequest.getAcceptedPrivacyPolicy(),
+                        "acceptedPersonalDataProcessing", registrationConfirmRequest.getAcceptedPersonalDataProcessing()
+                        )
+        );
+
+        registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
 
         RegistrationSessionEntity registrationSession = registrationSessionRepository
                 .findByEmail(email)

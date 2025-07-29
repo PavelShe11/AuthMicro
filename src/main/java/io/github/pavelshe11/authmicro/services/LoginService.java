@@ -1,40 +1,50 @@
 package io.github.pavelshe11.authmicro.services;
 
 
-import io.github.pavelshe11.authmicro.api.grpc.client.EmailValidatorGrpc;
+import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.api.grpc.client.RoleResolverGrpc;
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginResponseDto;
+import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
 import io.github.pavelshe11.authmicro.util.JwtUtil;
 import io.github.pavelshe11.authmicro.validators.LoginValidation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginService {
     private final LoginSessionRepository loginSessionRepository;
     private final CodeGeneratorService codeGeneratorService;
     private final JwtUtil jwtUtil;
-    private final EmailValidatorGrpc emailValidatorGrpc;
+    private final AccountValidatorGrpc accountValidatorGrpc;
     private final RoleResolverGrpc roleResolverGrpc;
     private final LoginValidation loginValidator;
 
     public LoginResponseDto login(String email) {
-        email = loginValidator.validateAndTrimEmail(email);
+        email = loginValidator.getTrimmedEmail(email);
 
-        Optional<String> accountIdOpt = emailValidatorGrpc.getAccountIdIfExists(email);
-        loginValidator.validateAccountIdOrThrow(accountIdOpt);
+        AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse =
+                accountValidatorGrpc.validateUserData(
+                        Map.of(
+                        "email", email
+                )
+        );
 
-        UUID accountId = UUID.fromString(accountIdOpt.get());
+        loginValidator.validateUserDataOrThrow(accountValidatorResponse);
+
+        UUID accountId = UUID.fromString(accountValidatorResponse.getAccountId());
+
 
         Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByAccountIdAndEmail(accountId, email);
 
@@ -64,9 +74,18 @@ public class LoginService {
     }
 
     public LoginConfirmResponseDto confirmLoginEmail(String email, String code) {
-        email = loginValidator.validateAndTrimEmail(email);
+        email = loginValidator.getTrimmedEmail(email);
 
-        UUID accountId = loginValidator.getAccountIdByEmailOrThrow(email);
+        AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse =
+                accountValidatorGrpc.validateUserData(
+                        Map.of(
+                                "email", email
+                        )
+                );
+
+        loginValidator.validateUserDataOrThrow(accountValidatorResponse);
+
+        UUID accountId = UUID.fromString(accountValidatorResponse.getAccountId());
 
         LoginSessionEntity session = loginValidator.getValidLoginSessionOrThrow(accountId, email);
 
