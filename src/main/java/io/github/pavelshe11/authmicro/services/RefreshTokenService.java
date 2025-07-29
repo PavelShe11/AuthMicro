@@ -43,8 +43,7 @@ public class RefreshTokenService {
                 .refreshToken(newRefreshToken)
                 .userAgent(userAgent)
                 .ip(ip)
-                .accessTokenExpires(accessTokenExpires)
-                .refreshTokenExpires(refreshTokenExpires)
+                .expiresAt(refreshTokenExpires)
                 .build();
 
         refreshTokenSessionRepository.save(session);
