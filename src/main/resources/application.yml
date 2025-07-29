@@ -36,16 +36,19 @@ management:
 grpc:
   client:
     email-validator-service:
-      address: static://networking-service:${GRPC_PORT}
+      address: ${EMAIL_VALIDATOR_SERVICE_ADDRESS}
       negotiation-type: plaintext
+
     account-creation-service:
-      address: static://networking-service:${GRPC_PORT}
+      address: ${ACCOUNT_CREATION_SERVICE_ADDRESS}
       negotiation-type: plaintext
+
     role-resolver-service:
-      address: static://networking-service:${GRPC_PORT}
+      address: ${ROLE_RESOLVER_SERVICE_ADDRESS}
       negotiation-type: plaintext
+
     check-domain-service:
-      address: static://networking-service:${GRPC_PORT}
+      address: ${CHECK_DOMAIN_SERVICE_ADDRESS}
       negotiation-type: plaintext
 
 logging:
@@ -59,4 +62,12 @@ server:
   port: ${AUTH_HTTP}
 
 jwt:
+  access-token:
+    lifetime: ${ACCESS_TOKEN_LIFETIME}
+  refresh-token:
+    lifetime: ${REFRESH_TOKEN_LIFETIME}
   secret: ${JWT_SECRET}
+
+code:
+  lifetime:
+    minutes: ${CODE_LIFETIME_MINUTES}
