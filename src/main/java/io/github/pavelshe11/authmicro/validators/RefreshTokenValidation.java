@@ -2,6 +2,7 @@ package io.github.pavelshe11.authmicro.validators;
 
 import io.github.pavelshe11.authmicro.api.http.server.exceptions.CodeVerificationException;
 import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidTokenException;
+import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -14,7 +15,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class RefreshTokenValidation {
     private final JwtDecoder jwtDecoder;
-
+    private final RefreshTokenSessionRepository refreshTokenSessionRepository;
     public Jwt getDecodedTokenOrThrow(String refreshToken) {
         Jwt decodedToken;
         try {
@@ -33,6 +34,12 @@ public class RefreshTokenValidation {
     public void checkIfTokenNotExpiredOrThrow(Jwt decodedToken) {
         if (decodedToken.getExpiresAt() == null || decodedToken.getExpiresAt().isBefore(Instant.now())) {
             throw new CodeVerificationException("error", "Ошибка времени действия кода.");
+        }
+    }
+
+    public void checkIfTokenExistsOrThrow(String refreshToken) {
+        if (!(refreshTokenSessionRepository.existsByRefreshToken(refreshToken))) {
+            throw new InvalidTokenException("error", "Невалидный токен.");
         }
     }
 }

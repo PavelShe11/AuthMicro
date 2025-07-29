@@ -21,7 +21,10 @@ public class RefreshTokenService {
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
     public RefreshTokenResponseDto refreshTokens(String refreshToken, String ip, String userAgent) {
 
+        refreshTokenValidator.checkIfTokenExistsOrThrow(refreshToken);
+
         Jwt decodedToken = refreshTokenValidator.getDecodedTokenOrThrow(refreshToken);
+
 
         refreshTokenValidator.checkIfTokenValidOrThrow(decodedToken);
         refreshTokenValidator.checkIfTokenNotExpiredOrThrow(decodedToken);
