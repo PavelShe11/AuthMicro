@@ -37,7 +37,8 @@ public class LoginService {
         AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse =
                 accountValidatorGrpc.validateUserData(
                         Map.of(
-                        "email", email
+                        "email", email,
+                                "typeOfActivity", "login"
                 )
         );
 
@@ -79,7 +80,8 @@ public class LoginService {
         AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse =
                 accountValidatorGrpc.validateUserData(
                         Map.of(
-                                "email", email
+                                "email", email,
+                                "typeOfActivity", "login"
                         )
                 );
 

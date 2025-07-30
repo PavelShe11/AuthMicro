@@ -36,7 +36,8 @@ public class RegistrationService {
                 Map.of(
                         "email", registrationRequest.getEmail(),
                         "acceptedPrivacyPolicy", registrationRequest.getAcceptedPrivacyPolicy(),
-                        "acceptedPersonalDataProcessing", registrationRequest.getAcceptedPersonalDataProcessing()
+                        "acceptedPersonalDataProcessing", registrationRequest.getAcceptedPersonalDataProcessing(),
+                        "typeOfActivity", "registration"
                 )
         );
 
@@ -74,8 +75,9 @@ public class RegistrationService {
                 Map.of(
                         "email", registrationConfirmRequest.getEmail(),
                         "acceptedPrivacyPolicy", registrationConfirmRequest.getAcceptedPrivacyPolicy(),
-                        "acceptedPersonalDataProcessing", registrationConfirmRequest.getAcceptedPersonalDataProcessing()
-                        )
+                        "acceptedPersonalDataProcessing", registrationConfirmRequest.getAcceptedPersonalDataProcessing(),
+                        "typeOfActivity", "registration"
+                )
         );
 
         registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
@@ -113,14 +115,14 @@ public class RegistrationService {
     private RegistrationResponseDto returnNewRegistrationResponseDto(String email, String code, Instant codeExpires) {
         RegistrationSessionEntity registrationSession =
                 registrationSessionRepository.save(
-                RegistrationSessionEntity.builder()
-                        .email(email)
-                        .acceptedPrivacyPolicy(true)
-                        .acceptedPersonalDataProcessing(true)
-                        .code(code)
-                        .codeExpires(codeExpires)
-                        .build()
-        );
+                        RegistrationSessionEntity.builder()
+                                .email(email)
+                                .acceptedPrivacyPolicy(true)
+                                .acceptedPersonalDataProcessing(true)
+                                .code(code)
+                                .codeExpires(codeExpires)
+                                .build()
+                );
 
         return new RegistrationResponseDto(
                 registrationSession.getCodeExpires(),
