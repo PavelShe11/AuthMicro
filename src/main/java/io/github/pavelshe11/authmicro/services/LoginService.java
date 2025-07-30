@@ -5,6 +5,7 @@ import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.api.grpc.client.RoleResolverGrpc;
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginResponseDto;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
@@ -44,8 +45,15 @@ public class LoginService {
 
         loginValidator.validateUserDataOrThrow(accountValidatorResponse);
 
-        UUID accountId = UUID.fromString(accountValidatorResponse.getAccountId());
+        String accountIdStr =accountValidatorResponse.getAccountId();
 
+        if (accountIdStr.isBlank()) {
+            String fakeCode = codeGeneratorService.codeGenerate();
+            Instant fakeCodeExpires = codeGeneratorService.codeExpiresGenerate();
+            return new LoginResponseDto(fakeCodeExpires, fakeCode);
+        }
+
+        UUID accountId = UUID.fromString(accountIdStr);
 
         Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByAccountIdAndEmail(accountId, email);
 
@@ -87,7 +95,13 @@ public class LoginService {
 
         loginValidator.validateUserDataOrThrow(accountValidatorResponse);
 
-        UUID accountId = UUID.fromString(accountValidatorResponse.getAccountId());
+        String accountIdStr =accountValidatorResponse.getAccountId();
+
+        if (accountIdStr.isBlank()) {
+            throw new InvalidCodeException("error", "Неверный код подтверждения");
+        }
+
+        UUID accountId = UUID.fromString(accountIdStr);
 
         LoginSessionEntity session = loginValidator.getValidLoginSessionOrThrow(accountId, email);
 
