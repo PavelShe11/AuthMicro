@@ -7,7 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RegistrationSessionRepository extends JpaRepository<RegistrationSessionEntity, UUID> {
-    Optional<RegistrationSessionEntity> findByCode(String code);
-
-    Optional<RegistrationSessionEntity>  findByEmail(String email);
+    Optional<RegistrationSessionEntity> findByEmail(String email);
 }

@@ -1,7 +1,7 @@
 package io.github.pavelshe11.authmicro.validators;
 
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.CodeVerificationException;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidTokenException;
+import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.exceptions.InvalidTokenException;
 import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -16,6 +16,7 @@ import java.time.Instant;
 public class RefreshTokenValidation {
     private final JwtDecoder jwtDecoder;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+
     public Jwt getDecodedTokenOrThrow(String refreshToken) {
         try {
             return jwtDecoder.decode(refreshToken);

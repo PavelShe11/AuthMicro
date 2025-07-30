@@ -7,9 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface LoginSessionRepository extends JpaRepository<LoginSessionEntity, UUID> {
-    Optional<LoginSessionEntity> findByCode(String code);
-
-    boolean getByIdAndEmail(UUID id, String email);
-
     Optional<LoginSessionEntity> findByAccountIdAndEmail(UUID accountId, String email);
 }

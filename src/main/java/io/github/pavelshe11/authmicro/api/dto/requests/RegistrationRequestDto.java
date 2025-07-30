@@ -1,4 +1,4 @@
-package io.github.pavelshe11.authmicro.api.http.server.dto.requests;
+package io.github.pavelshe11.authmicro.api.dto.requests;
 
 import jakarta.validation.constraints.Email;
 import lombok.*;

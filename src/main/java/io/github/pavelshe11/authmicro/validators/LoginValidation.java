@@ -1,9 +1,9 @@
 package io.github.pavelshe11.authmicro.validators;
 
-import io.github.pavelshe11.authmicro.api.http.server.dto.FieldErrorDto;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.CodeVerificationException;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.FieldValidationException;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidCodeException;
+import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
+import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.exceptions.FieldValidationException;
+import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-import java.time.Instant;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,6 +21,7 @@ import java.util.UUID;
 @Component
 public class LoginValidation {
     private final LoginSessionRepository loginSessionRepository;
+
     public String getTrimmedEmail(String email) {
         return email.trim();
     }
@@ -44,7 +45,7 @@ public class LoginValidation {
             throw new InvalidCodeException("error", "Неверный код подтверждения");
         }
 
-        if (loginSessionOpt.get().getCodeExpires().isBefore(Instant.now())) {
+        if (loginSessionOpt.get().getCodeExpires().before(new Timestamp(System.currentTimeMillis()))) {
             throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код и попробуйте снова.");
         }
         return loginSessionOpt.get();
@@ -58,7 +59,7 @@ public class LoginValidation {
     }
 
     public void ensureCodeIsNotExpired(LoginSessionEntity session) {
-        if (session.getCodeExpires().isBefore(Instant.now())) {
+        if (session.getCodeExpires().before(new Timestamp(System.currentTimeMillis()))) {
             throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код.");
         }
     }

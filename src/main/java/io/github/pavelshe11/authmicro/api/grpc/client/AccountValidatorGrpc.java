@@ -1,6 +1,6 @@
 package io.github.pavelshe11.authmicro.api.grpc.client;
 import com.google.protobuf.NullValue;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.ServerAnswerException;
+import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 

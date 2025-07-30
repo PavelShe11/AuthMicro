@@ -1,9 +1,10 @@
-package io.github.pavelshe11.authmicro.api.http.server.dto.responses;
+package io.github.pavelshe11.authmicro.api.dto.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 
 @Data
@@ -11,8 +12,8 @@ import java.time.Instant;
 @Builder
 public class RefreshTokenResponseDto {
     private String refreshToken;
-    private Instant refreshTokenExpires;
+    private Timestamp refreshTokenExpires;
     private String accessToken;
-    private Instant accessTokenExpires;
+    private Timestamp accessTokenExpires;
 
 }

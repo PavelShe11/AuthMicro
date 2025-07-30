@@ -3,9 +3,9 @@ package io.github.pavelshe11.authmicro.services;
 
 import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.api.grpc.client.RoleResolverGrpc;
-import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginConfirmResponseDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginResponseDto;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidCodeException;
+import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
+import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
+import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.entities.RefreshTokenSessionEntity;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,7 +52,7 @@ public class LoginService {
 
         if (accountIdStr.isBlank()) {
             String fakeCode = codeGeneratorService.codeGenerate();
-            Instant fakeCodeExpires = codeGeneratorService.codeExpiresGenerate();
+            Timestamp fakeCodeExpires = codeGeneratorService.codeExpiresGenerate();
             return new LoginResponseDto(fakeCodeExpires, fakeCode);
         }
 
@@ -64,7 +64,7 @@ public class LoginService {
             LoginSessionEntity session = loginSessionOpt.get();
 
             String newCode = codeGeneratorService.codeGenerate();
-            Instant newCodeExpires = codeGeneratorService.codeExpiresGenerate();
+            Timestamp newCodeExpires = codeGeneratorService.codeExpiresGenerate();
 
             session.setCode(newCode);
             session.setCodeExpires(newCodeExpires);
@@ -73,7 +73,7 @@ public class LoginService {
             return new LoginResponseDto(newCodeExpires, newCode);
         } else {
             String code = codeGeneratorService.codeGenerate();
-            Instant codeExpires = codeGeneratorService.codeExpiresGenerate();
+            Timestamp codeExpires = codeGeneratorService.codeExpiresGenerate();
             LoginSessionEntity loginSession = LoginSessionEntity.builder()
                     .accountId(accountId)
                     .email(email)
@@ -116,8 +116,8 @@ public class LoginService {
         String accessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
         String refreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
 
-        Instant accessTokenExpires = jwtUtil.extractExpiration(accessToken);
-        Instant refreshTokenExpires = jwtUtil.extractExpiration(refreshToken);
+        Timestamp accessTokenExpires = jwtUtil.extractExpiration(accessToken);
+        Timestamp refreshTokenExpires = jwtUtil.extractExpiration(refreshToken);
 
         loginSessionRepository.save(session);
 

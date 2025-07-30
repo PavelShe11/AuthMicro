@@ -2,10 +2,10 @@ package io.github.pavelshe11.authmicro.services;
 
 import io.github.pavelshe11.authmicro.api.grpc.client.AccountCreationRequestGrpc;
 import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
-import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RegistrationConfirmRequestDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RegistrationRequestDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.responses.RegistrationResponseDto;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.ServerAnswerException;
+import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
+import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
+import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
+import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RegistrationSessionRepository;
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.sql.Timestamp;
 import java.util.Map;
 
 @Service
@@ -44,7 +44,7 @@ public class RegistrationService {
         registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
 
         String code = registrationGeneratorService.codeGenerate();
-        Instant codeExpires = registrationGeneratorService.codeExpiresGenerate();
+        Timestamp codeExpires = registrationGeneratorService.codeExpiresGenerate();
 
         RegistrationSessionEntity registrationSession = registrationSessionRepository
                 .findByEmail(email)
@@ -104,7 +104,7 @@ public class RegistrationService {
     }
 
 
-    private RegistrationResponseDto refreshCodeAndReturnRegistrationResponseDto(RegistrationSessionEntity registrationSession, String code, Instant codeExpires) {
+    private RegistrationResponseDto refreshCodeAndReturnRegistrationResponseDto(RegistrationSessionEntity registrationSession, String code, Timestamp codeExpires) {
         registrationSession.setCode(code);
         registrationSession.setCodeExpires(codeExpires);
         registrationSessionRepository.save(registrationSession);
@@ -112,7 +112,7 @@ public class RegistrationService {
         return new RegistrationResponseDto(codeExpires, code);
     }
 
-    private RegistrationResponseDto returnNewRegistrationResponseDto(String email, String code, Instant codeExpires) {
+    private RegistrationResponseDto returnNewRegistrationResponseDto(String email, String code, Timestamp codeExpires) {
         RegistrationSessionEntity registrationSession =
                 registrationSessionRepository.save(
                         RegistrationSessionEntity.builder()

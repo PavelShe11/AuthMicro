@@ -1,6 +1,6 @@
-package io.github.pavelshe11.authmicro.api.http.server.exceptions;
+package io.github.pavelshe11.authmicro.api.exceptions;
 
-import io.github.pavelshe11.authmicro.api.http.server.dto.FieldErrorDto;
+import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
 
 import java.util.List;
 

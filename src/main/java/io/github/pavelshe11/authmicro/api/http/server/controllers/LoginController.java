@@ -1,9 +1,9 @@
 package io.github.pavelshe11.authmicro.api.http.server.controllers;
 
-import io.github.pavelshe11.authmicro.api.http.server.dto.requests.LoginConfirmRequestDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.requests.LoginRequestDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginConfirmResponseDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginResponseDto;
+import io.github.pavelshe11.authmicro.api.dto.requests.LoginConfirmRequestDto;
+import io.github.pavelshe11.authmicro.api.dto.requests.LoginRequestDto;
+import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
+import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.services.LoginService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

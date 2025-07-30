@@ -1,9 +1,8 @@
 package io.github.pavelshe11.authmicro.api.http.server.controllers;
 
-import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RefreshTokenRequestDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.responses.RefreshTokenResponseDto;
+import io.github.pavelshe11.authmicro.api.dto.requests.RefreshTokenRequestDto;
+import io.github.pavelshe11.authmicro.api.dto.responses.RefreshTokenResponseDto;
 import io.github.pavelshe11.authmicro.services.RefreshTokenService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -1,15 +1,16 @@
 package io.github.pavelshe11.authmicro.validators;
 
-import io.github.pavelshe11.authmicro.api.http.server.dto.FieldErrorDto;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.CodeVerificationException;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.FieldValidationException;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidCodeException;
+import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
+import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.exceptions.FieldValidationException;
+import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -17,16 +18,14 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 public class RegistrationValidation {
-    private final AccountValidatorGrpc accountValidatorGrpc;
-
     public void ensureCodeIsExpired(RegistrationSessionEntity session) {
-        if (session.getCodeExpires().isAfter(Instant.now())) {
+        if (session.getCodeExpires().after(new Timestamp(System.currentTimeMillis()))) {
             throw new CodeVerificationException("error", "Код еще не истёк.");
         }
     }
 
     public void ensureCodeIsNotExpired(RegistrationSessionEntity session) {
-        if (session.getCodeExpires().isBefore(Instant.now())) {
+        if (session.getCodeExpires().before(new Timestamp(System.currentTimeMillis()))) {
             throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код.");
         }
     }

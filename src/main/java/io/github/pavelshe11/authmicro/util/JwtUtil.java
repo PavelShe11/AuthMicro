@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 
@@ -55,8 +56,8 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Instant extractExpiration(String token) {
+    public Timestamp extractExpiration(String token) {
         Jwt decodedJwt = jwtDecoder.decode(token);
-        return decodedJwt.getExpiresAt();
+        return Timestamp.from(Objects.requireNonNull(decodedJwt.getExpiresAt()));
     }
 }

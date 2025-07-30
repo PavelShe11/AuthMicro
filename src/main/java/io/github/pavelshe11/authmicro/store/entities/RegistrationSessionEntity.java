@@ -3,6 +3,7 @@ package io.github.pavelshe11.authmicro.store.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ public class RegistrationSessionEntity {
     private String email;
 
     @Column(name = "code_expires", nullable = false)
-    private Instant codeExpires;
+    private Timestamp codeExpires;
 
     @Column(name = "is_accepted_privacy_policy", nullable = false)
     private Boolean acceptedPrivacyPolicy;
@@ -37,6 +38,5 @@ public class RegistrationSessionEntity {
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt = Instant.now();
-
+    private Timestamp createdAt = Timestamp.from(Instant.now());
 }

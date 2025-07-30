@@ -1,4 +1,4 @@
-package io.github.pavelshe11.authmicro.api.http.server.dto.requests;
+package io.github.pavelshe11.authmicro.api.dto.requests;
 
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -8,10 +8,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder
-public class LoginConfirmRequestDto {
-
+public class LoginRequestDto {
     @Email(message = "Некорректный формат Email.")
     private String email;
-
-    private String code;
 }

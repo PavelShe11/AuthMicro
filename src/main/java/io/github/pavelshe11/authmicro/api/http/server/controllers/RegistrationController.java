@@ -1,8 +1,8 @@
 package io.github.pavelshe11.authmicro.api.http.server.controllers;
 
-import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RegistrationConfirmRequestDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.requests.RegistrationRequestDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.responses.RegistrationResponseDto;
+import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
+import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
+import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.services.RegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

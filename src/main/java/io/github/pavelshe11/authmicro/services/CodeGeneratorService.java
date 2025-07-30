@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
@@ -16,11 +17,10 @@ public class CodeGeneratorService {
     private int codeLifetimeMinutes;
 
     public String codeGenerate() {
-        String code = String.format("%06d", new Random().nextInt(1000000));
-        return code;
+        return String.format("%06d", new Random().nextInt(1000000));
     }
 
-    public Instant codeExpiresGenerate() {
-        return Instant.now().plus(codeLifetimeMinutes, ChronoUnit.MINUTES);
+    public Timestamp codeExpiresGenerate() {
+        return Timestamp.from(Instant.now().plus(codeLifetimeMinutes, ChronoUnit.MINUTES));
     }
 }

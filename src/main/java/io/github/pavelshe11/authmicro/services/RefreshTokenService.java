@@ -1,7 +1,7 @@
 package io.github.pavelshe11.authmicro.services;
 
-import io.github.pavelshe11.authmicro.api.http.server.dto.responses.RefreshTokenResponseDto;
-import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidTokenException;
+import io.github.pavelshe11.authmicro.api.dto.responses.RefreshTokenResponseDto;
+import io.github.pavelshe11.authmicro.api.exceptions.InvalidTokenException;
 import io.github.pavelshe11.authmicro.store.entities.RefreshTokenSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import io.github.pavelshe11.authmicro.util.JwtUtil;
@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +20,7 @@ public class RefreshTokenService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenValidation refreshTokenValidator;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+
     public RefreshTokenResponseDto refreshTokens(String refreshToken) {
 
         refreshTokenValidator.checkIfTokenExistsOrThrow(refreshToken);
@@ -34,13 +35,13 @@ public class RefreshTokenService {
         List<String> roles = decodedToken.getClaimAsStringList("roles");
         boolean isAdmin = roles.contains("admin");
 
-        UUID accountId =  UUID.fromString(accountIdStr);
+        UUID accountId = UUID.fromString(accountIdStr);
 
         String newAccessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
         String newRefreshToken = jwtUtil.generateAccessToken(accountId, isAdmin);
 
-        Instant accessTokenExpires = jwtUtil.extractExpiration(newAccessToken);
-        Instant refreshTokenExpires = jwtUtil.extractExpiration(newRefreshToken);
+        Timestamp accessTokenExpires = jwtUtil.extractExpiration(newAccessToken);
+        Timestamp refreshTokenExpires = jwtUtil.extractExpiration(newRefreshToken);
 
         RefreshTokenSessionEntity oldSession = refreshTokenSessionRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new InvalidTokenException("error", "Невалидный токен."));

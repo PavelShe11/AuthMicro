@@ -3,6 +3,7 @@ package io.github.pavelshe11.authmicro.store.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -29,9 +30,9 @@ public class LoginSessionEntity {
     private String code;
 
     @Column(name = "code_expires", nullable = false)
-    private Instant codeExpires;
+    private Timestamp codeExpires;
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt = Instant.now();
+    private Timestamp createdAt = Timestamp.from(Instant.now());
 }

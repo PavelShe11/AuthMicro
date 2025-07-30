@@ -1,7 +1,7 @@
-package io.github.pavelshe11.authmicro.api.http.server.exceptions;
+package io.github.pavelshe11.authmicro.api.exceptions;
 
-import io.github.pavelshe11.authmicro.api.http.server.dto.ErrorDto;
-import io.github.pavelshe11.authmicro.api.http.server.dto.FieldErrorDto;
+import io.github.pavelshe11.authmicro.api.dto.ErrorDto;
+import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
