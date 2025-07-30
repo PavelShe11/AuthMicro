@@ -36,18 +36,18 @@ management:
 grpc:
   client:
     account-validator-service:
-      address: static://networking-service:9092
-      #      address: ${ACCOUNT_VALIDATOR_SERVICE_ADDRESS}
+#      address: static://networking-service:9092
+      address: ${ACCOUNT_VALIDATOR_SERVICE_ADDRESS}
       negotiation-type: plaintext
 
     account-creation-service:
-      address: static://networking-service:9092
-      #      address: ${ACCOUNT_CREATION_SERVICE_ADDRESS}
+#      address: static://networking-service:9092
+      address: ${ACCOUNT_CREATION_SERVICE_ADDRESS}
       negotiation-type: plaintext
 
     role-resolver-service:
-      address: static://networking-service:9092
-      #      address: ${ROLE_RESOLVER_SERVICE_ADDRESS}
+#      address: static://networking-service:9092
+      address: ${ROLE_RESOLVER_SERVICE_ADDRESS}
       negotiation-type: plaintext
 
 logging:

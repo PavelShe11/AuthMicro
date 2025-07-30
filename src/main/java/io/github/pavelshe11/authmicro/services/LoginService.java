@@ -8,7 +8,9 @@ import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginRespons
 import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
+import io.github.pavelshe11.authmicro.store.entities.RefreshTokenSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
+import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import io.github.pavelshe11.authmicro.util.JwtUtil;
 import io.github.pavelshe11.authmicro.validators.LoginValidation;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class LoginService {
     private final AccountValidatorGrpc accountValidatorGrpc;
     private final RoleResolverGrpc roleResolverGrpc;
     private final LoginValidation loginValidator;
+    private final RefreshTokenSessionRepository refreshTokenSessionRepository;
 
     public LoginResponseDto login(String email) {
         email = loginValidator.getTrimmedEmail(email);
@@ -38,14 +41,14 @@ public class LoginService {
         AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse =
                 accountValidatorGrpc.validateUserData(
                         Map.of(
-                        "email", email,
+                                "email", email,
                                 "typeOfActivity", "login"
-                )
-        );
+                        )
+                );
 
         loginValidator.validateUserDataOrThrow(accountValidatorResponse);
 
-        String accountIdStr =accountValidatorResponse.getAccountId();
+        String accountIdStr = accountValidatorResponse.getAccountId();
 
         if (accountIdStr.isBlank()) {
             String fakeCode = codeGeneratorService.codeGenerate();
@@ -82,7 +85,7 @@ public class LoginService {
         }
     }
 
-    public LoginConfirmResponseDto confirmLoginEmail(String email, String code) {
+    public LoginConfirmResponseDto confirmLoginEmail(String email, String code, String ip, String userAgent) {
         email = loginValidator.getTrimmedEmail(email);
 
         AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse =
@@ -95,7 +98,7 @@ public class LoginService {
 
         loginValidator.validateUserDataOrThrow(accountValidatorResponse);
 
-        String accountIdStr =accountValidatorResponse.getAccountId();
+        String accountIdStr = accountValidatorResponse.getAccountId();
 
         if (accountIdStr.isBlank()) {
             throw new InvalidCodeException("error", "Неверный код подтверждения");
@@ -117,6 +120,17 @@ public class LoginService {
         Instant refreshTokenExpires = jwtUtil.extractExpiration(refreshToken);
 
         loginSessionRepository.save(session);
+
+        RefreshTokenSessionEntity refreshTokenSession = RefreshTokenSessionEntity.builder()
+                .accountId(accountId)
+                .refreshToken(refreshToken)
+                .userAgent(userAgent)
+                .ip(ip)
+                .expiresAt(refreshTokenExpires)
+                .build();
+
+        refreshTokenSessionRepository.save(refreshTokenSession);
+
 
         return LoginConfirmResponseDto.builder()
                 .accessToken(accessToken)

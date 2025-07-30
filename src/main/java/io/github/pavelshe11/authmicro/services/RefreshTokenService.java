@@ -1,6 +1,7 @@
 package io.github.pavelshe11.authmicro.services;
 
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.RefreshTokenResponseDto;
+import io.github.pavelshe11.authmicro.api.http.server.exceptions.InvalidTokenException;
 import io.github.pavelshe11.authmicro.store.entities.RefreshTokenSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import io.github.pavelshe11.authmicro.util.JwtUtil;
@@ -19,7 +20,7 @@ public class RefreshTokenService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenValidation refreshTokenValidator;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
-    public RefreshTokenResponseDto refreshTokens(String refreshToken, String ip, String userAgent) {
+    public RefreshTokenResponseDto refreshTokens(String refreshToken) {
 
         refreshTokenValidator.checkIfTokenExistsOrThrow(refreshToken);
 
@@ -41,11 +42,14 @@ public class RefreshTokenService {
         Instant accessTokenExpires = jwtUtil.extractExpiration(newAccessToken);
         Instant refreshTokenExpires = jwtUtil.extractExpiration(newRefreshToken);
 
+        RefreshTokenSessionEntity oldSession = refreshTokenSessionRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new InvalidTokenException("error", "Невалидный токен."));
+
         RefreshTokenSessionEntity session = RefreshTokenSessionEntity.builder()
                 .accountId(accountId)
                 .refreshToken(newRefreshToken)
-                .userAgent(userAgent)
-                .ip(ip)
+                .ip(oldSession.getIp())
+                .userAgent(oldSession.getUserAgent())
                 .expiresAt(refreshTokenExpires)
                 .build();
 

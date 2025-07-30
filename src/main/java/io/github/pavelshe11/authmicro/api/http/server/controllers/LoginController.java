@@ -5,6 +5,7 @@ import io.github.pavelshe11.authmicro.api.http.server.dto.requests.LoginRequestD
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.http.server.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.services.LoginService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,11 +29,22 @@ public class LoginController {
 
     @PostMapping("/confirmEmail")
     public LoginConfirmResponseDto confirmLoginEmail(
-            @Valid @RequestBody LoginConfirmRequestDto loginConfirmRequest
+            @Valid @RequestBody LoginConfirmRequestDto loginConfirmRequest,
+            HttpServletRequest httpRequest
     ) {
+        String ip;
+        String header = httpRequest.getHeader("X-Forwarded-For");
+        if (header != null && !header.isEmpty() && !"unknown".equalsIgnoreCase(header)) {
+            header.split(",")[0].trim();
+            ip = header;
+        } else {
+            ip = httpRequest.getRemoteAddr();
+        }
+        String userAgent = httpRequest.getHeader("User-Agent");
         return loginService.confirmLoginEmail(
                 loginConfirmRequest.getEmail(),
-                loginConfirmRequest.getCode()
+                loginConfirmRequest.getCode(),
+                ip, userAgent
         );
     }
 }

@@ -18,22 +18,9 @@ public class RefreshTokensController {
 
     @PostMapping("/refreshToken")
     public RefreshTokenResponseDto refreshToken(
-            @RequestBody RefreshTokenRequestDto refreshTokenRequest,
-            HttpServletRequest httpRequest
+            @RequestBody RefreshTokenRequestDto refreshTokenRequest
     ) {
-        String ip;
-        String header = httpRequest.getHeader("X-Forwarded-For");
-        if (header != null && !header.isEmpty() && !"unknown".equalsIgnoreCase(header)) {
-            header.split(",")[0].trim();
-            ip = header;
-        } else {
-            ip = httpRequest.getRemoteAddr();
-        }
-        String userAgent = httpRequest.getHeader("User-Agent");
-
-        return refreshTokenService.refreshTokens(refreshTokenRequest.getRefreshToken(),
-                ip,
-                userAgent);
+        return refreshTokenService.refreshTokens(refreshTokenRequest.getRefreshToken());
 
     }
 }
