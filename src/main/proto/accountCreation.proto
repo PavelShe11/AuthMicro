@@ -3,6 +3,8 @@ syntax = "proto3";
 option java_package = "io.github.pavelshe11.authmicro.grpc"; // место для генерации файлов
 option java_outer_classname = "AccountCreationProto";
 
+import "google/protobuf/struct.proto";
+
 import "error.proto";
 
 service AccountCreationService {
@@ -10,9 +12,7 @@ service AccountCreationService {
 }
 
 message CreateAccountRequest {
-  string email = 1;
-  bool accepted_privacy_policy = 2;
-  bool accepted_personal_data_processing = 3;
+  map<string, google.protobuf.Value> userData = 1;
 }
 
 message CreateAccountResponse {
@@ -28,5 +28,5 @@ message SuccessResponse {
 
 message ErrorResponse {
   string error = 1;
-  repeated FieldError detailed_errors = 2;
+  repeated FieldError detailedErrors = 2;
 }

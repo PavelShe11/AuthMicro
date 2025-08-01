@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface LoginSessionRepository extends JpaRepository<LoginSessionEntity, UUID> {
     Optional<LoginSessionEntity> findByAccountIdAndEmail(UUID accountId, String email);
+
+    Optional<LoginSessionEntity> findByEmail(String email);
 }

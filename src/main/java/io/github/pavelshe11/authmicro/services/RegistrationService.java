@@ -1,7 +1,7 @@
 package io.github.pavelshe11.authmicro.services;
 
-import io.github.pavelshe11.authmicro.api.grpc.client.AccountCreationRequestGrpc;
-import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
+import io.github.pavelshe11.authmicro.api.client.grpc.AccountCreationRequestGrpc;
+import io.github.pavelshe11.authmicro.api.client.grpc.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
@@ -10,6 +10,7 @@ import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RegistrationSessionRepository;
 import io.github.pavelshe11.authmicro.validators.RegistrationValidation;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -36,12 +37,27 @@ public class RegistrationService {
                 Map.of(
                         "email", registrationRequest.getEmail(),
                         "acceptedPrivacyPolicy", registrationRequest.getAcceptedPrivacyPolicy(),
-                        "acceptedPersonalDataProcessing", registrationRequest.getAcceptedPersonalDataProcessing(),
-                        "typeOfActivity", "registration"
+                        "acceptedPersonalDataProcessing", registrationRequest.getAcceptedPersonalDataProcessing()
                 )
         );
 
         registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
+
+        if (!accountValidatorResponse.getAccept()) {
+            Timestamp fakeCodeExpires = registrationGeneratorService.codeExpiresGenerate();
+
+            RegistrationSessionEntity fakeSession = RegistrationSessionEntity.builder()
+                    .email(email)
+                    .acceptedPrivacyPolicy(false)
+                    .acceptedPersonalDataProcessing(false)
+                    .code("")
+                    .codeExpires(fakeCodeExpires)
+                    .build();
+
+            registrationSessionRepository.save(fakeSession);
+
+            return new RegistrationResponseDto(fakeCodeExpires, "");
+        }
 
         String code = registrationGeneratorService.codeGenerate();
         Timestamp codeExpires = registrationGeneratorService.codeExpiresGenerate();
@@ -63,7 +79,7 @@ public class RegistrationService {
     }
 
 
-    public ResponseEntity<Void> confirmEmail(RegistrationConfirmRequestDto registrationConfirmRequest) {
+    public ResponseEntity<Void> confirmEmail(RegistrationConfirmRequestDto registrationConfirmRequest, HttpServletRequest httpRequest) {
 
         String email = registrationConfirmRequest.getEmail();
         String code = registrationConfirmRequest.getCode();
@@ -75,8 +91,7 @@ public class RegistrationService {
                 Map.of(
                         "email", registrationConfirmRequest.getEmail(),
                         "acceptedPrivacyPolicy", registrationConfirmRequest.getAcceptedPrivacyPolicy(),
-                        "acceptedPersonalDataProcessing", registrationConfirmRequest.getAcceptedPersonalDataProcessing(),
-                        "typeOfActivity", "registration"
+                        "acceptedPersonalDataProcessing", registrationConfirmRequest.getAcceptedPersonalDataProcessing()
                 )
         );
 
@@ -94,7 +109,14 @@ public class RegistrationService {
 
         registrationValidator.ensureCodeIsNotExpired(registrationSession);
 
-        boolean isAccountCreated = accountCreationRequestGrpc.createAccount(email);
+        boolean isAccountCreated = accountCreationRequestGrpc.createAccount(
+                Map.of(
+                        "email", registrationConfirmRequest.getEmail(),
+                        "acceptedPrivacyPolicy", registrationConfirmRequest.getAcceptedPrivacyPolicy(),
+                        "acceptedPersonalDataProcessing", registrationConfirmRequest.getAcceptedPersonalDataProcessing(),
+                        "ip", httpRequest.getRemoteAddr()
+                )
+        );
 
         if (!isAccountCreated) {
             throw new ServerAnswerException("Сервер не отвечает.");

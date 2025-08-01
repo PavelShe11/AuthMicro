@@ -20,7 +20,7 @@ public class LoginSessionEntity {
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "account_id", nullable = false)
+    @Column(name = "account_id")
     private UUID accountId;
 
     @Column(nullable = false)

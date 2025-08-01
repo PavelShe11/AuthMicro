@@ -1,9 +1,10 @@
-package io.github.pavelshe11.authmicro.api.http.server.controllers;
+package io.github.pavelshe11.authmicro.api.server.http.controllers;
 
 import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.services.RegistrationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +27,9 @@ public class RegistrationController {
 
     @PostMapping("/confirmEmail")
     public ResponseEntity<Void> registrationConfirmEmail(
-            @Valid @RequestBody RegistrationConfirmRequestDto registrationConfirmRequest) {
+            @Valid @RequestBody RegistrationConfirmRequestDto registrationConfirmRequest,
+            HttpServletRequest httpRequest) {
         return registrationService.confirmEmail(
-                registrationConfirmRequest);
+                registrationConfirmRequest, httpRequest);
     }
 }

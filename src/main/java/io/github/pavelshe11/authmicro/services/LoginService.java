@@ -1,12 +1,13 @@
 package io.github.pavelshe11.authmicro.services;
 
 
-import io.github.pavelshe11.authmicro.api.grpc.client.AccountValidatorGrpc;
-import io.github.pavelshe11.authmicro.api.grpc.client.RoleResolverGrpc;
+import io.github.pavelshe11.authmicro.api.client.grpc.AccountValidatorGrpc;
+import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
-import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
+import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
+import io.github.pavelshe11.authmicro.grpc.getAccountInfoProto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.entities.RefreshTokenSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
@@ -14,104 +15,70 @@ import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepo
 import io.github.pavelshe11.authmicro.util.JwtUtil;
 import io.github.pavelshe11.authmicro.validators.LoginValidation;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginService {
     private final LoginSessionRepository loginSessionRepository;
     private final CodeGeneratorService codeGeneratorService;
     private final JwtUtil jwtUtil;
-    private final AccountValidatorGrpc accountValidatorGrpc;
-    private final RoleResolverGrpc roleResolverGrpc;
+    private final GetAccountInfoGrpc getAccountInfoGrpc;
     private final LoginValidation loginValidator;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
 
     public LoginResponseDto login(String email) {
-        email = loginValidator.getTrimmedEmail(email);
 
-        AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse =
-                accountValidatorGrpc.validateUserData(
-                        Map.of(
-                                "email", email,
-                                "typeOfActivity", "login"
-                        )
-                );
+        email = loginValidator.ValidateAndGetTrimmedEmail(email);
 
-        loginValidator.validateUserDataOrThrow(accountValidatorResponse);
+        Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
+                getAccountInfoGrpc.getAccountInfo(email);
 
-        String accountIdStr = accountValidatorResponse.getAccountId();
-
-        if (accountIdStr.isBlank()) {
-            String fakeCode = codeGeneratorService.codeGenerate();
-            Timestamp fakeCodeExpires = codeGeneratorService.codeExpiresGenerate();
-            return new LoginResponseDto(fakeCodeExpires, fakeCode);
+        if (accountInfoOpt.isEmpty()) {
+            return fakeLoginSessionCreateAndSave(email);
         }
+        getAccountInfoProto.GetAccountInfoResponse response = accountInfoOpt.get();
 
-        UUID accountId = UUID.fromString(accountIdStr);
+        return validLoginSessionCreateAndSave(response, email);
 
-        Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByAccountIdAndEmail(accountId, email);
-
-        if (loginSessionOpt.isPresent()) {
-            LoginSessionEntity session = loginSessionOpt.get();
-
-            String newCode = codeGeneratorService.codeGenerate();
-            Timestamp newCodeExpires = codeGeneratorService.codeExpiresGenerate();
-
-            session.setCode(newCode);
-            session.setCodeExpires(newCodeExpires);
-            loginSessionRepository.save(session);
-
-            return new LoginResponseDto(newCodeExpires, newCode);
-        } else {
-            String code = codeGeneratorService.codeGenerate();
-            Timestamp codeExpires = codeGeneratorService.codeExpiresGenerate();
-            LoginSessionEntity loginSession = LoginSessionEntity.builder()
-                    .accountId(accountId)
-                    .email(email)
-                    .code(code)
-                    .codeExpires(codeExpires)
-                    .build();
-            loginSessionRepository.save(loginSession);
-            return new LoginResponseDto(codeExpires, code);
-        }
     }
 
     public LoginConfirmResponseDto confirmLoginEmail(String email, String code, String ip, String userAgent) {
-        email = loginValidator.getTrimmedEmail(email);
+        email = loginValidator.ValidateAndGetTrimmedEmail(email);
+        Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByEmail(email);
 
-        AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse =
-                accountValidatorGrpc.validateUserData(
-                        Map.of(
-                                "email", email,
-                                "typeOfActivity", "login"
-                        )
-                );
+        if (loginSessionOpt.isEmpty()) {
+            throw new ServerAnswerException("Сервер не отвечает.");
+        }
+        LoginSessionEntity loginSession =loginSessionOpt.get();
 
-        loginValidator.validateUserDataOrThrow(accountValidatorResponse);
+            if (loginSession.getAccountId() == null) {
+                throw new InvalidCodeException("error", "Неверный код подтверждения.");
+            }
 
-        String accountIdStr = accountValidatorResponse.getAccountId();
+            loginValidator.checkIfCodeIsValid(loginSession, code);
+            loginValidator.ensureCodeIsNotExpired(loginSession);
 
-        if (accountIdStr.isBlank()) {
-            throw new InvalidCodeException("error", "Неверный код подтверждения");
+            Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
+                    getAccountInfoGrpc.getAccountInfo(email);
+
+        if (accountInfoOpt.isEmpty()) {
+            throw new ServerAnswerException("Сервер не отвечает.");
         }
 
-        UUID accountId = UUID.fromString(accountIdStr);
+        getAccountInfoProto.GetAccountInfoResponse response = accountInfoOpt.get();
 
-        LoginSessionEntity session = loginValidator.getValidLoginSessionOrThrow(accountId, email);
+        if (!response.getAccountId().equals(loginSession.getAccountId().toString())) {
+            throw new ServerAnswerException("Сервер не отвечает.");
+        }
 
-        loginValidator.checkIfCodeIsValid(session, code);
-        loginValidator.ensureCodeIsNotExpired(session);
-
-        boolean isAdmin = roleResolverGrpc.isAdmin(accountId);
+        UUID accountId = UUID.fromString(response.getAccountId());
+        boolean isAdmin = response.getRole().equals("admin");
 
         String accessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
         String refreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
@@ -119,7 +86,7 @@ public class LoginService {
         Timestamp accessTokenExpires = jwtUtil.extractExpiration(accessToken);
         Timestamp refreshTokenExpires = jwtUtil.extractExpiration(refreshToken);
 
-        loginSessionRepository.save(session);
+        loginSessionRepository.save(loginSession);
 
         RefreshTokenSessionEntity refreshTokenSession = RefreshTokenSessionEntity.builder()
                 .accountId(accountId)
@@ -139,4 +106,51 @@ public class LoginService {
                 .refreshTokenExpires(refreshTokenExpires)
                 .build();
     }
+
+
+    private LoginResponseDto validLoginSessionCreateAndSave(getAccountInfoProto.GetAccountInfoResponse response, String email) {
+        String accountIdStr = response.getAccountId();
+        UUID accountId = UUID.fromString(accountIdStr);
+
+        Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByAccountIdAndEmail(accountId, email);
+
+        if (loginSessionOpt.isPresent()) {
+            LoginSessionEntity session = loginSessionOpt.get();
+
+            if (session.getCodeExpires().before(Timestamp.from(Instant.now()))) {
+                String refreshCode = codeGeneratorService.codeGenerate();
+                Timestamp refreshCodeExpires = codeGeneratorService.codeExpiresGenerate();
+                session.setCode(refreshCode);
+                session.setCodeExpires(refreshCodeExpires);
+                loginSessionRepository.save(session);
+                return new LoginResponseDto(refreshCodeExpires, refreshCode);
+            }
+            return new LoginResponseDto(session.getCodeExpires(), session.getCode());
+        } else {
+            String code = codeGeneratorService.codeGenerate();
+            Timestamp codeExpires = codeGeneratorService.codeExpiresGenerate();
+            LoginSessionEntity loginSession = LoginSessionEntity.builder()
+                    .accountId(accountId)
+                    .email(email)
+                    .code(code)
+                    .codeExpires(codeExpires)
+                    .build();
+            loginSessionRepository.save(loginSession);
+            return new LoginResponseDto(codeExpires, code);
+        }
+    }
+
+    private LoginResponseDto fakeLoginSessionCreateAndSave(String email) {
+
+        Timestamp fakeCodeExpires = codeGeneratorService.codeExpiresGenerate();
+        LoginSessionEntity loginSession = LoginSessionEntity.builder()
+                .accountId(null)
+                .email(email)
+                .code("")
+                .codeExpires(fakeCodeExpires)
+                .build();
+        loginSessionRepository.save(loginSession);
+        return new LoginResponseDto(fakeCodeExpires, "");
+    }
+
 }

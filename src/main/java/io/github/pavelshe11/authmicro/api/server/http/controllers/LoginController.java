@@ -1,4 +1,4 @@
-package io.github.pavelshe11.authmicro.api.http.server.controllers;
+package io.github.pavelshe11.authmicro.api.server.http.controllers;
 
 import io.github.pavelshe11.authmicro.api.dto.requests.LoginConfirmRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.requests.LoginRequestDto;

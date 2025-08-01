@@ -16,7 +16,6 @@ message ValidateUserDataRequest {
 
 message ValidateUserDataResponse {
   bool accept = 1;
-  string accountId = 2;
-  string error = 3;
-  repeated FieldError detailedErrors = 4;
+  string error = 2;
+  repeated FieldError detailedErrors = 3;
 }

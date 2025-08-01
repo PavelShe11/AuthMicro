@@ -12,30 +12,22 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
 public class LoginValidation {
     private final LoginSessionRepository loginSessionRepository;
 
-    public String getTrimmedEmail(String email) {
-        return email.trim();
-    }
-
-
-    public void validateUserDataOrThrow(AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse) {
-        if (!accountValidatorResponse.getAccept()) {
-            List<FieldErrorDto> fieldErrors = accountValidatorResponse.getDetailedErrorsList().stream()
-                    .map(err -> new FieldErrorDto(err.getField(), err.getMessage()))
-                    .toList();
-
+    public String ValidateAndGetTrimmedEmail(String email) {
+        List<FieldErrorDto> fieldErrors = new ArrayList<>();
+        if (email == null || email.trim().isEmpty()) {
+            fieldErrors.add(
+                    new FieldErrorDto("email", "поле пустое.")
+            );
             throw new FieldValidationException(fieldErrors);
-
         }
+        return email.trim();
     }
 
     public LoginSessionEntity getValidLoginSessionOrThrow(UUID accountId, String email) {
