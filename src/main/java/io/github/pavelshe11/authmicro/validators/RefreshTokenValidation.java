@@ -26,7 +26,7 @@ public class RefreshTokenValidation {
     }
 
     public void checkIfTokenValidOrThrow(Jwt decodedToken) {
-        if (!"refresh".equals(decodedToken.getClaimAsString("type"))) {
+        if (!"refresh" .equals(decodedToken.getClaimAsString("type"))) {
             throw new InvalidTokenException("error", "Невалидный токен.");
         }
     }

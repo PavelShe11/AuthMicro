@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,7 +35,14 @@ public class RegistrationValidation {
         }
     }
 
-    public String getTrimmedEmail(String email) {
+    public String getTrimmedEmailOrThrow(String email) {
+        List<FieldErrorDto> fieldErrors = new ArrayList<>();
+        if (email == null || email.trim().isEmpty()) {
+            fieldErrors.add(
+                    new FieldErrorDto("email", "поле пустое.")
+            );
+            throw new FieldValidationException("Ошибка регистрации", fieldErrors);
+        }
         return email.trim();
     }
 
@@ -44,7 +52,7 @@ public class RegistrationValidation {
                     .map(err -> new FieldErrorDto(err.getField(), err.getMessage()))
                     .toList();
 
-            throw new FieldValidationException(fieldErrors);
+            throw new FieldValidationException("Ошибка регистрации", fieldErrors);
 
         }
     }

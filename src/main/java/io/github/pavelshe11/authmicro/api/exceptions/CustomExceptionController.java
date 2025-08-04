@@ -20,7 +20,7 @@ public class CustomExceptionController {
 
     @ExceptionHandler(FieldValidationException.class)
     public ResponseEntity<ErrorDto> handleFieldValidationExceptions(FieldValidationException ex) {
-        ErrorDto response = new ErrorDto("Ошибка регистрации", ex.getErrors());
+        ErrorDto response = new ErrorDto(ex.getMessage(), ex.getErrors());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 

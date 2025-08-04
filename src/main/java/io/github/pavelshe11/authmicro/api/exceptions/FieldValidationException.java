@@ -1,19 +1,18 @@
 package io.github.pavelshe11.authmicro.api.exceptions;
 
 import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
+import lombok.Getter;
 
 import java.util.List;
 
-public class FieldValidationException extends RuntimeException{
+@Getter
+public class FieldValidationException extends RuntimeException {
     private final List<FieldErrorDto> errors;
+    private final String message;
 
-    public FieldValidationException(List<FieldErrorDto> errors) {
-        super("Ошибка регистрации");
+    public FieldValidationException(String message, List<FieldErrorDto> errors) {
+        this.message = message;
         this.errors = errors;
-    }
-
-    public List<FieldErrorDto> getErrors() {
-        return errors;
     }
 
 }

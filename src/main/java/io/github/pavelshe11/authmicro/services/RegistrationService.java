@@ -30,7 +30,7 @@ public class RegistrationService {
     public RegistrationResponseDto register(RegistrationRequestDto registrationRequest) {
 
         String email = registrationRequest.getEmail();
-        email = registrationValidator.getTrimmedEmail(email);
+        email = registrationValidator.getTrimmedEmailOrThrow(email);
 
         AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse
                 = accountValidatorGrpc.validateUserData(
@@ -44,47 +44,24 @@ public class RegistrationService {
         registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
 
         if (!accountValidatorResponse.getAccept()) {
-            Timestamp fakeCodeExpires = registrationGeneratorService.codeExpiresGenerate();
-
-            RegistrationSessionEntity fakeSession = RegistrationSessionEntity.builder()
-                    .email(email)
-                    .acceptedPrivacyPolicy(false)
-                    .acceptedPersonalDataProcessing(false)
-                    .code("")
-                    .codeExpires(fakeCodeExpires)
-                    .build();
-
-            registrationSessionRepository.save(fakeSession);
-
-            return new RegistrationResponseDto(fakeCodeExpires, "");
+            return fakeRegistrationSessionCreate(email);
         }
 
         String code = registrationGeneratorService.codeGenerate();
         Timestamp codeExpires = registrationGeneratorService.codeExpiresGenerate();
 
-        RegistrationSessionEntity registrationSession = registrationSessionRepository
-                .findByEmail(email)
-                .orElse(null);
-
-        if (registrationSession != null) {
-            registrationValidator.ensureCodeIsExpired(registrationSession);
-
-            return refreshCodeAndReturnRegistrationResponseDto(
-                    registrationSession,
-                    code, codeExpires
-            );
-        }
+        RegistrationResponseDto existingRegistrationSession = handleExistingRegistrationSession(email, code, codeExpires);
+        if (existingRegistrationSession != null) return existingRegistrationSession;
 
         return returnNewRegistrationResponseDto(email, code, codeExpires);
     }
-
 
     public ResponseEntity<Void> confirmEmail(RegistrationConfirmRequestDto registrationConfirmRequest, HttpServletRequest httpRequest) {
 
         String email = registrationConfirmRequest.getEmail();
         String code = registrationConfirmRequest.getCode();
 
-        email = registrationValidator.getTrimmedEmail(email);
+        email = registrationValidator.getTrimmedEmailOrThrow(email);
 
         AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse
                 = accountValidatorGrpc.validateUserData(
@@ -125,6 +102,39 @@ public class RegistrationService {
         return ResponseEntity.ok().build();
     }
 
+
+    private RegistrationResponseDto fakeRegistrationSessionCreate(String email) {
+        Timestamp fakeCodeExpires = registrationGeneratorService.codeExpiresGenerate();
+
+        RegistrationSessionEntity fakeSession = RegistrationSessionEntity.builder()
+                .email(email)
+                .acceptedPrivacyPolicy(false)
+                .acceptedPersonalDataProcessing(false)
+                .code("")
+                .codeExpires(fakeCodeExpires)
+                .build();
+
+        registrationSessionRepository.save(fakeSession);
+
+        return new RegistrationResponseDto(fakeCodeExpires, "");
+    }
+
+
+    private RegistrationResponseDto handleExistingRegistrationSession(String email, String code, Timestamp codeExpires) {
+        RegistrationSessionEntity registrationSession = registrationSessionRepository
+                .findByEmail(email)
+                .orElse(null);
+
+        if (registrationSession != null) {
+            registrationValidator.ensureCodeIsExpired(registrationSession);
+
+            return refreshCodeAndReturnRegistrationResponseDto(
+                    registrationSession,
+                    code, codeExpires
+            );
+        }
+        return null;
+    }
 
     private RegistrationResponseDto refreshCodeAndReturnRegistrationResponseDto(RegistrationSessionEntity registrationSession, String code, Timestamp codeExpires) {
         registrationSession.setCode(code);

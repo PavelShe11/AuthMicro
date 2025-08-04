@@ -1,11 +1,9 @@
 package io.github.pavelshe11.authmicro.services;
 
 
-import io.github.pavelshe11.authmicro.api.client.grpc.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
-import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.grpc.getAccountInfoProto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
@@ -34,7 +32,7 @@ public class LoginService {
 
     public LoginResponseDto login(String email) {
 
-        email = loginValidator.ValidateAndGetTrimmedEmail(email);
+        email = loginValidator.getTrimmedEmailOrThrow(email);
 
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
                 getAccountInfoGrpc.getAccountInfo(email);
@@ -49,45 +47,58 @@ public class LoginService {
     }
 
     public LoginConfirmResponseDto confirmLoginEmail(String email, String code, String ip, String userAgent) {
-        email = loginValidator.ValidateAndGetTrimmedEmail(email);
+        email = loginValidator.getTrimmedEmailOrThrow(email);
         Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByEmail(email);
 
-        if (loginSessionOpt.isEmpty()) {
-            throw new ServerAnswerException("Сервер не отвечает.");
-        }
-        LoginSessionEntity loginSession =loginSessionOpt.get();
+        LoginSessionEntity loginSession = loginValidator.validateLoginSessionOrThrow(loginSessionOpt);
 
-            if (loginSession.getAccountId() == null) {
-                throw new InvalidCodeException("error", "Неверный код подтверждения.");
-            }
+        loginValidator.checkIfCodeIsValid(loginSession, code);
+        loginValidator.ensureCodeIsNotExpired(loginSession);
 
-            loginValidator.checkIfCodeIsValid(loginSession, code);
-            loginValidator.ensureCodeIsNotExpired(loginSession);
+        getAccountInfoProto.GetAccountInfoResponse accountInfo = getAccountInfoGrpc.getAccountInfo(email)
+                .orElseThrow(() -> new ServerAnswerException("Сервер не отвечает."));
 
-            Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
-                    getAccountInfoGrpc.getAccountInfo(email);
 
-        if (accountInfoOpt.isEmpty()) {
+        UUID accountId = UUID.fromString(accountInfo.getAccountId());
+        if (!accountId.equals(loginSession.getAccountId())) {
             throw new ServerAnswerException("Сервер не отвечает.");
         }
 
-        getAccountInfoProto.GetAccountInfoResponse response = accountInfoOpt.get();
+        boolean isAdmin = "admin" .equals(accountInfo.getRole());
 
-        if (!response.getAccountId().equals(loginSession.getAccountId().toString())) {
-            throw new ServerAnswerException("Сервер не отвечает.");
-        }
-
-        UUID accountId = UUID.fromString(response.getAccountId());
-        boolean isAdmin = response.getRole().equals("admin");
-
-        String accessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
-        String refreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
-
-        Timestamp accessTokenExpires = jwtUtil.extractExpiration(accessToken);
-        Timestamp refreshTokenExpires = jwtUtil.extractExpiration(refreshToken);
+        Map<String, Object> tokens = generateTokens(accountId, isAdmin);
 
         loginSessionRepository.save(loginSession);
 
+        refreshTokenSessionCreateAndSave(ip, userAgent, accountId,
+                (String) tokens.get("refreshToken"), (Timestamp) tokens.get("refreshTokenExpires"));
+
+
+        return LoginConfirmResponseBuild(tokens);
+    }
+
+
+    private static LoginConfirmResponseDto LoginConfirmResponseBuild(Map<String, Object> tokens) {
+        return LoginConfirmResponseDto.builder()
+                .accessToken((String) tokens.get("accessToken"))
+                .refreshToken((String) tokens.get("refreshToken"))
+                .accessTokenExpires((Timestamp) tokens.get("accessTokenExpires"))
+                .refreshTokenExpires((Timestamp) tokens.get("refreshTokenExpires"))
+                .build();
+    }
+
+    private Map<String, Object> generateTokens(UUID accountId, boolean isAdmin) {
+        String accessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
+        String refreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
+        Map<String, Object> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
+        tokens.put("accessTokenExpires", jwtUtil.extractExpiration(accessToken));
+        tokens.put("refreshTokenExpires", jwtUtil.extractExpiration(refreshToken));
+        return tokens;
+    }
+
+    private void refreshTokenSessionCreateAndSave(String ip, String userAgent, UUID accountId, String refreshToken, Timestamp refreshTokenExpires) {
         RefreshTokenSessionEntity refreshTokenSession = RefreshTokenSessionEntity.builder()
                 .accountId(accountId)
                 .refreshToken(refreshToken)
@@ -97,16 +108,7 @@ public class LoginService {
                 .build();
 
         refreshTokenSessionRepository.save(refreshTokenSession);
-
-
-        return LoginConfirmResponseDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .accessTokenExpires(accessTokenExpires)
-                .refreshTokenExpires(refreshTokenExpires)
-                .build();
     }
-
 
     private LoginResponseDto validLoginSessionCreateAndSave(getAccountInfoProto.GetAccountInfoResponse response, String email) {
         String accountIdStr = response.getAccountId();
