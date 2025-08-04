@@ -2,6 +2,7 @@ package io.github.pavelshe11.authmicro.api.exceptions;
 
 import io.github.pavelshe11.authmicro.api.dto.ErrorDto;
 import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +50,21 @@ public class CustomExceptionController {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDto> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request
     ) {
+
+        String uri = request.getRequestURI();
+
+        String contextMessage;
+        if (uri.contains("/login")) {
+            contextMessage = "Ошибка входа.";
+        } else if (uri.contains("/registration")) {
+            contextMessage = "Ошибка регистрации.";
+        } else {
+            contextMessage = "Ошибка валидации.";
+        }
+
         List<FieldErrorDto> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -58,7 +72,7 @@ public class CustomExceptionController {
                         error.getDefaultMessage()))
                 .toList();
 
-        ErrorDto response = new ErrorDto("Ошибка регистрации", errors);
+        ErrorDto response = new ErrorDto(contextMessage, errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }
