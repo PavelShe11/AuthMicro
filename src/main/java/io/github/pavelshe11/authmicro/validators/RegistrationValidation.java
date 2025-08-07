@@ -29,6 +29,7 @@ public class RegistrationValidation {
         if (session.getCodeExpires().after(new Timestamp(System.currentTimeMillis()))) {
             return false;
         }
+        return true;
     }
 
     public void ensureCodeIsNotExpired(RegistrationSessionEntity session) {
