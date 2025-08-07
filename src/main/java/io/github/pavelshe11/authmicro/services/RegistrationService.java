@@ -54,13 +54,13 @@ public class RegistrationService {
             return fakeRegistrationSessionCreateAndSave(email);
         }
 
+        RegistrationResponseDto existingRegistrationSession = handleExistingRegistrationSession(email);
+        if (existingRegistrationSession != null) return existingRegistrationSession;
+
         String rawCode = registrationGeneratorService.codeGenerate();
         String hashedCode = registrationGeneratorService.codeHash(rawCode);
         long codeExpires = registrationGeneratorService.codeExpiresGenerate();
         log.info("REGISTRATION_CODE email={} code={}", email, rawCode);
-
-        RegistrationResponseDto existingRegistrationSession = handleExistingRegistrationSession(email, hashedCode, new Timestamp(codeExpires));
-        if (existingRegistrationSession != null) return existingRegistrationSession;
 
         return returnNewRegistrationResponseDto(email, hashedCode, new Timestamp(codeExpires));
     }
@@ -127,19 +127,22 @@ public class RegistrationService {
     }
 
 
-    private RegistrationResponseDto handleExistingRegistrationSession(String email, String code, Timestamp codeExpires) {
+    private RegistrationResponseDto handleExistingRegistrationSession(String email) {
         RegistrationSessionEntity registrationSession = registrationSessionRepository
                 .findByEmail(email)
                 .orElse(null);
 
         if (registrationSession != null) {
-            if (!registrationValidator.IsCodeExpired(registrationSession)) {
+            if (!registrationValidator.isCodeExpired(registrationSession)) {
                 return new RegistrationResponseDto(registrationSession.getCodeExpires().getTime());
             }
+            String rawCode = registrationGeneratorService.codeGenerate();
+            String hashedCode = registrationGeneratorService.codeHash(rawCode);
+            long codeExpires = registrationGeneratorService.codeExpiresGenerate();
 
             return refreshCodeAndReturnRegistrationResponseDto(
                     registrationSession,
-                    code, codeExpires
+                    hashedCode, new Timestamp(codeExpires)
             );
         }
         return null;

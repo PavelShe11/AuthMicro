@@ -25,7 +25,7 @@ public class RegistrationValidation {
 //        }
 //    }
 
-    public boolean IsCodeExpired(RegistrationSessionEntity session) {
+    public boolean isCodeExpired(RegistrationSessionEntity session) {
         if (session.getCodeExpires().after(new Timestamp(System.currentTimeMillis()))) {
             return false;
         }
