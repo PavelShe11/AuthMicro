@@ -67,7 +67,7 @@ public class RegistrationService {
         RegistrationResponseDto existingRegistrationSession = handleExistingRegistrationSession(email, hashedCode, new Timestamp(codeExpires));
         if (existingRegistrationSession != null) return existingRegistrationSession;
 
-        return returnNewRegistrationResponseDto(email, rawCode, new Timestamp(codeExpires));
+        return returnNewRegistrationResponseDto(email, hashedCode, new Timestamp(codeExpires));
     }
 
     public ResponseEntity<Void> confirmEmail(RegistrationConfirmRequestDto registrationConfirmRequest, HttpServletRequest httpRequest) {
