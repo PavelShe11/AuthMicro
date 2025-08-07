@@ -1,26 +1,31 @@
-package io.github.pavelshe11.authmicro.services;
+package io.github.pavelshe11.authmicro.components;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
-@Service
+@Component
 @RequiredArgsConstructor
-public class CodeGeneratorService {
+public class CodeGenerator {
     @Value("${code.lifetime.minutes}")
     private int codeLifetimeMinutes;
+
+    private final PasswordEncoder passwordEncoder;
 
     public String codeGenerate() {
         return String.format("%06d", new Random().nextInt(1000000));
     }
 
-    public Timestamp codeExpiresGenerate() {
-        return Timestamp.from(Instant.now().plus(codeLifetimeMinutes, ChronoUnit.MINUTES));
+    public String codeHash(String code) {
+        return passwordEncoder.encode(code);
+    }
+
+    public long codeExpiresGenerate() {
+        return Instant.now().plus(codeLifetimeMinutes, ChronoUnit.MINUTES).toEpochMilli();
     }
 }

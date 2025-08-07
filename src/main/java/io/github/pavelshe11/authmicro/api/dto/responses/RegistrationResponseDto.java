@@ -4,14 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.UUID;
-
 @Data
 @AllArgsConstructor
 @Builder
 public class RegistrationResponseDto {
-    private Timestamp codeExpires;
-    private String code;
+    private long codeExpires;
+//    private String code;
 }

@@ -5,6 +5,7 @@ import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
+import io.github.pavelshe11.authmicro.components.CodeGenerator;
 import io.github.pavelshe11.authmicro.grpc.getAccountInfoProto;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
 import io.github.pavelshe11.authmicro.store.entities.RefreshTokenSessionEntity;
@@ -13,6 +14,8 @@ import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepo
 import io.github.pavelshe11.authmicro.util.JwtUtil;
 import io.github.pavelshe11.authmicro.validators.LoginValidation;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -24,11 +27,13 @@ import java.util.*;
 @RequiredArgsConstructor
 public class LoginService {
     private final LoginSessionRepository loginSessionRepository;
-    private final CodeGeneratorService codeGeneratorService;
+    private final CodeGenerator codeGenerator;
     private final JwtUtil jwtUtil;
     private final GetAccountInfoGrpc getAccountInfoGrpc;
     private final LoginValidation loginValidator;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(LoginService.class);
 
     public LoginResponseDto login(String email) {
 
@@ -82,8 +87,8 @@ public class LoginService {
         return LoginConfirmResponseDto.builder()
                 .accessToken((String) tokens.get("accessToken"))
                 .refreshToken((String) tokens.get("refreshToken"))
-                .accessTokenExpires((Timestamp) tokens.get("accessTokenExpires"))
-                .refreshTokenExpires((Timestamp) tokens.get("refreshTokenExpires"))
+                .accessTokenExpires((long) tokens.get("accessTokenExpires"))
+                .refreshTokenExpires((long) tokens.get("refreshTokenExpires"))
                 .build();
     }
 
@@ -120,39 +125,44 @@ public class LoginService {
             LoginSessionEntity session = loginSessionOpt.get();
 
             if (session.getCodeExpires().before(Timestamp.from(Instant.now()))) {
-                String refreshCode = codeGeneratorService.codeGenerate();
-                Timestamp refreshCodeExpires = codeGeneratorService.codeExpiresGenerate();
-                session.setCode(refreshCode);
-                session.setCodeExpires(refreshCodeExpires);
+                String rawRefreshCode = codeGenerator.codeGenerate();
+                String hashedRefreshCode = codeGenerator.codeGenerate();
+                long refreshCodeExpires = codeGenerator.codeExpiresGenerate();
+                session.setCode(hashedRefreshCode);
+                session.setCodeExpires(new Timestamp(refreshCodeExpires));
+                log.info("LOGIN_CODE email={} code={}", email, rawRefreshCode);
                 loginSessionRepository.save(session);
-                return new LoginResponseDto(refreshCodeExpires, refreshCode);
+                return new LoginResponseDto(refreshCodeExpires);
             }
-            return new LoginResponseDto(session.getCodeExpires(), session.getCode());
+            return new LoginResponseDto(session.getCodeExpires().getTime());
         } else {
-            String code = codeGeneratorService.codeGenerate();
-            Timestamp codeExpires = codeGeneratorService.codeExpiresGenerate();
+            String rawCode = codeGenerator.codeGenerate();
+            String hashedCode = codeGenerator.codeHash(rawCode);
+            long codeExpires = codeGenerator.codeExpiresGenerate();
             LoginSessionEntity loginSession = LoginSessionEntity.builder()
                     .accountId(accountId)
                     .email(email)
-                    .code(code)
-                    .codeExpires(codeExpires)
+                    .code(hashedCode)
+                    .codeExpires(new Timestamp(codeExpires))
                     .build();
+            log.info("LOGIN_CODE email={} code={}", email, rawCode);
             loginSessionRepository.save(loginSession);
-            return new LoginResponseDto(codeExpires, code);
+            return new LoginResponseDto(codeExpires);
         }
     }
 
     private LoginResponseDto fakeLoginSessionCreateAndSave(String email) {
 
-        Timestamp fakeCodeExpires = codeGeneratorService.codeExpiresGenerate();
+        long fakeCodeExpires = codeGenerator.codeExpiresGenerate();
         LoginSessionEntity loginSession = LoginSessionEntity.builder()
                 .accountId(null)
                 .email(email)
                 .code("")
-                .codeExpires(fakeCodeExpires)
+                .codeExpires(new Timestamp(fakeCodeExpires))
                 .build();
+        log.info("FAKE_LOGIN_CODE email={} code={}", email, "");
         loginSessionRepository.save(loginSession);
-        return new LoginResponseDto(fakeCodeExpires, "");
+        return new LoginResponseDto(fakeCodeExpires);
     }
 
 }

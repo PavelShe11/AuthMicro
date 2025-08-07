@@ -6,6 +6,7 @@ import io.github.pavelshe11.authmicro.api.exceptions.FieldValidationException;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.store.entities.LoginSessionEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import java.util.*;
 @RequiredArgsConstructor
 @Component
 public class LoginValidation {
+
+    private final PasswordEncoder passwordEncoder;
 
     public String getTrimmedEmailOrThrow(String email) {
         List<FieldErrorDto> fieldErrors = new ArrayList<>();
@@ -29,7 +32,7 @@ public class LoginValidation {
     }
 
     public void checkIfCodeIsValid(LoginSessionEntity session, String code) {
-        if (!(Objects.equals(code, session.getCode()))) {
+        if (!passwordEncoder.matches(code, session.getCode())) {
             throw new InvalidCodeException("error", "Неверный код подтверждения.");
         }
     }

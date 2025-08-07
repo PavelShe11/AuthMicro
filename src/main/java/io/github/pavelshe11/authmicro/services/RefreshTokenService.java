@@ -57,6 +57,7 @@ public class RefreshTokenService {
         refreshTokenSessionRepository.save(session);
 
 
-        return new RefreshTokenResponseDto(newRefreshToken, refreshTokenExpires, newAccessToken, accessTokenExpires);
+        return new RefreshTokenResponseDto(newRefreshToken,
+                refreshTokenExpires.getTime(), newAccessToken, accessTokenExpires.getTime());
     }
 }

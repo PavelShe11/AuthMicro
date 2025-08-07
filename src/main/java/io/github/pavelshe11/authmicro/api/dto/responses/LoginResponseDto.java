@@ -5,13 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-
 @Data
 @AllArgsConstructor
 @Builder
 public class LoginResponseDto {
-    private Timestamp codeExpires;
-    private String code;
+    private long codeExpires;
+//    private String code;
 }

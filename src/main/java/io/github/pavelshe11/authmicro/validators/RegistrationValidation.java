@@ -7,6 +7,7 @@ import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
@@ -17,6 +18,8 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 public class RegistrationValidation {
+    private final PasswordEncoder passwordEncoder;
+
     public void ensureCodeIsExpired(RegistrationSessionEntity session) {
         if (session.getCodeExpires().after(new Timestamp(System.currentTimeMillis()))) {
             throw new CodeVerificationException("error", "Код еще не истёк.");
@@ -30,7 +33,7 @@ public class RegistrationValidation {
     }
 
     public void checkIfCodeIsValid(String code, RegistrationSessionEntity registrationSession) {
-        if (!(Objects.equals(code, registrationSession.getCode()))) {
+        if (!passwordEncoder.matches(code, registrationSession.getCode()) || code.isBlank() || code == null) {
             throw new InvalidCodeException("error", "Неверный код подтверждения.");
         }
     }
