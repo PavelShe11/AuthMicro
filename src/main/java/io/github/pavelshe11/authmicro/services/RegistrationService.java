@@ -1,10 +1,11 @@
 package io.github.pavelshe11.authmicro.services;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.pavelshe11.authmicro.api.client.grpc.AccountCreationRequestGrpc;
 import io.github.pavelshe11.authmicro.api.client.grpc.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
-import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
-import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.components.CodeGenerator;
@@ -36,19 +37,15 @@ public class RegistrationService {
 
     private static final Logger log = LoggerFactory.getLogger(RegistrationService.class);
 
-    public RegistrationResponseDto register(RegistrationRequestDto registrationRequest) {
+    public RegistrationResponseDto register(JsonNode registrationRequest) {
 
-        String email = registrationRequest.getEmail();
+        String email = registrationRequest.path("email").asText(null);
         email = registrationValidator.getTrimmedEmailOrThrow(email);
 
+        Map<String, Object> userData = convertJsonNodeToMap(registrationRequest);
+
         AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse
-                = accountValidatorGrpc.validateUserData(
-                Map.of(
-                        "email", registrationRequest.getEmail(),
-                        "acceptedPrivacyPolicy", registrationRequest.getAcceptedPrivacyPolicy(),
-                        "acceptedPersonalDataProcessing", registrationRequest.getAcceptedPersonalDataProcessing()
-                )
-        );
+                = accountValidatorGrpc.validateUserData(userData);
 
         registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
 
@@ -70,21 +67,18 @@ public class RegistrationService {
         return returnNewRegistrationResponseDto(email, hashedCode, new Timestamp(codeExpires));
     }
 
-    public ResponseEntity<Void> confirmEmail(RegistrationConfirmRequestDto registrationConfirmRequest, HttpServletRequest httpRequest) {
 
-        String email = registrationConfirmRequest.getEmail();
-        String code = registrationConfirmRequest.getCode();
+    public ResponseEntity<Void> confirmEmail(JsonNode registrationConfirmRequest, HttpServletRequest httpRequest) {
+
+        String email = registrationConfirmRequest.path("email").asText(null);
+        String code = registrationConfirmRequest.path("code").asText(null);
 
         email = registrationValidator.getTrimmedEmailOrThrow(email);
 
+        Map<String, Object> userData = convertJsonNodeToMap(registrationConfirmRequest);
+
         AccountValidatorProto.ValidateUserDataResponse accountValidatorResponse
-                = accountValidatorGrpc.validateUserData(
-                Map.of(
-                        "email", registrationConfirmRequest.getEmail(),
-                        "acceptedPrivacyPolicy", registrationConfirmRequest.getAcceptedPrivacyPolicy(),
-                        "acceptedPersonalDataProcessing", registrationConfirmRequest.getAcceptedPersonalDataProcessing()
-                )
-        );
+                = accountValidatorGrpc.validateUserData(userData);
 
         registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
 
@@ -100,14 +94,9 @@ public class RegistrationService {
 
         registrationValidator.ensureCodeIsNotExpired(registrationSession);
 
-        boolean isAccountCreated = accountCreationRequestGrpc.createAccount(
-                Map.of(
-                        "email", registrationConfirmRequest.getEmail(),
-                        "acceptedPrivacyPolicy", registrationConfirmRequest.getAcceptedPrivacyPolicy(),
-                        "acceptedPersonalDataProcessing", registrationConfirmRequest.getAcceptedPersonalDataProcessing(),
-                        "ip", httpRequest.getRemoteAddr()
-                )
-        );
+        userData.put("ip", httpRequest.getRemoteAddr());
+
+        boolean isAccountCreated = accountCreationRequestGrpc.createAccount(userData);
 
 
         if (!isAccountCreated) {
@@ -117,6 +106,12 @@ public class RegistrationService {
         return ResponseEntity.ok().build();
     }
 
+
+
+    private Map<String, Object> convertJsonNodeToMap(JsonNode registrationRequest) {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.convertValue(registrationRequest, new TypeReference<>() {});
+    }
 
     private RegistrationResponseDto fakeRegistrationSessionCreateAndSave(String email) {
         long fakeCodeExpires = registrationGeneratorService.codeExpiresGenerate();

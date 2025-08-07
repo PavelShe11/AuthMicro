@@ -1,7 +1,6 @@
 package io.github.pavelshe11.authmicro.api.server.http.controllers;
 
-import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationConfirmRequestDto;
-import io.github.pavelshe11.authmicro.api.dto.requests.RegistrationRequestDto;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.services.RegistrationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,14 +19,14 @@ public class RegistrationController {
     private final RegistrationService registrationService;
 
     @PostMapping()
-    public RegistrationResponseDto sendRegistrationCode(@Valid @RequestBody RegistrationRequestDto registrationRequest) {
+    public RegistrationResponseDto sendRegistrationCode(@Valid @RequestBody JsonNode registrationRequest) {
         // TODO: send email
         return registrationService.register(registrationRequest);
     }
 
     @PostMapping("/confirmEmail")
     public ResponseEntity<Void> registrationConfirmEmail(
-            @Valid @RequestBody RegistrationConfirmRequestDto registrationConfirmRequest,
+            @Valid @RequestBody JsonNode registrationConfirmRequest,
             HttpServletRequest httpRequest) {
         return registrationService.confirmEmail(
                 registrationConfirmRequest, httpRequest);
