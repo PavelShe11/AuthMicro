@@ -56,15 +56,15 @@ public class LoginService {
         loginValidator.ensureCodeIsNotExpired(loginSession);
 
         getAccountInfoProto.GetAccountInfoResponse accountInfo = getAccountInfoGrpc.getAccountInfo(email)
-                .orElseThrow(() -> new ServerAnswerException("Сервер не отвечает."));
+                .orElseThrow(() -> new ServerAnswerException());
 
 
         UUID accountId = UUID.fromString(accountInfo.getAccountId());
         if (!accountId.equals(loginSession.getAccountId())) {
-            throw new ServerAnswerException("Сервер не отвечает.");
+            throw new ServerAnswerException();
         }
 
-        boolean isAdmin = "admin" .equals(accountInfo.getRole());
+        boolean isAdmin = "admin".equals(accountInfo.getRole());
 
         Map<String, Object> tokens = generateTokens(accountId, isAdmin);
 

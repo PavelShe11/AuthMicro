@@ -49,7 +49,7 @@ public class AccountCreationRequestGrpc {
             case String s -> builder.setStringValue(s).build();
             case Boolean b -> builder.setBoolValue(b).build();
             case Number n -> builder.setNumberValue(n.doubleValue()).build();
-            default -> throw new ServerAnswerException("Сервер не отвечает");
+            default -> throw new ServerAnswerException();
         };
     }
 }

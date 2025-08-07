@@ -42,7 +42,7 @@ public class LoginValidation {
 
     public LoginSessionEntity validateLoginSessionOrThrow(Optional<LoginSessionEntity> loginSessionOpt) {
         if (loginSessionOpt.isEmpty()) {
-            throw new ServerAnswerException("Сервер не отвечает.");
+            throw new ServerAnswerException();
         }
         LoginSessionEntity loginSession = loginSessionOpt.get();
 

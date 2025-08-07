@@ -44,7 +44,7 @@ public class RefreshTokenService {
         Timestamp refreshTokenExpires = jwtUtil.extractExpiration(newRefreshToken);
 
         RefreshTokenSessionEntity oldSession = refreshTokenSessionRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new InvalidTokenException("error", "Невалидный токен."));
+                .orElseThrow(() -> new InvalidTokenException());
 
         RefreshTokenSessionEntity session = RefreshTokenSessionEntity.builder()
                 .accountId(accountId)

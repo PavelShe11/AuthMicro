@@ -96,7 +96,7 @@ public class RegistrationService {
         );
 
         if (!isAccountCreated) {
-            throw new ServerAnswerException("Сервер не отвечает.");
+            throw new ServerAnswerException();
         }
 
         return ResponseEntity.ok().build();

@@ -21,13 +21,13 @@ public class RefreshTokenValidation {
         try {
             return jwtDecoder.decode(refreshToken);
         } catch (JwtException e) {
-            throw new InvalidTokenException("error", "Невалидный токен.");
+            throw new InvalidTokenException();
         }
     }
 
     public void checkIfTokenValidOrThrow(Jwt decodedToken) {
-        if (!"refresh" .equals(decodedToken.getClaimAsString("type"))) {
-            throw new InvalidTokenException("error", "Невалидный токен.");
+        if (!"refresh".equals(decodedToken.getClaimAsString("type"))) {
+            throw new InvalidTokenException();
         }
     }
 
@@ -39,7 +39,7 @@ public class RefreshTokenValidation {
 
     public void checkIfTokenExistsOrThrow(String refreshToken) {
         if (!(refreshTokenSessionRepository.existsByRefreshToken(refreshToken))) {
-            throw new InvalidTokenException("error", "Невалидный токен.");
+            throw new InvalidTokenException();
         }
     }
 }

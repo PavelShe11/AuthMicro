@@ -26,9 +26,9 @@ public class CustomExceptionController {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDto> handleGeneralExceptions(Exception ex) {
+    public ResponseEntity<ErrorDto> handleGeneralExceptions() {
         ErrorDto response = ErrorDto.builder()
-                .error(ex.getMessage())
+                .error("Внутренняя ошибка сервера")
                 .build();
 
         return ResponseEntity

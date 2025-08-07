@@ -42,7 +42,7 @@ public class AccountValidatorGrpc {
             case Boolean b -> valueBuilder.setBoolValue(b);
             case Number number -> valueBuilder.setNumberValue(number.doubleValue());
             case String s -> valueBuilder.setStringValue(s);
-            default -> throw new ServerAnswerException("Сервер не отвечает.");
+            default -> throw new ServerAnswerException();
         }
         return valueBuilder.build();
     }
