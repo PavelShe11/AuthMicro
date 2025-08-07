@@ -26,7 +26,8 @@ public class CustomExceptionController {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDto> handleGeneralExceptions() {
+    public ResponseEntity<ErrorDto> handleGeneralExceptions(Exception ex) {
+        System.out.println(ex.getMessage());
         ErrorDto response = ErrorDto.builder()
                 .error("Внутренняя ошибка сервера")
                 .build();

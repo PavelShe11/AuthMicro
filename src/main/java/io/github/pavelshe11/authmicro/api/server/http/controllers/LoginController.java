@@ -35,8 +35,7 @@ public class LoginController {
         String ip;
         String header = httpRequest.getHeader("X-Forwarded-For");
         if (header != null && !header.isEmpty() && !"unknown".equalsIgnoreCase(header)) {
-            header.split(",")[0].trim();
-            ip = header;
+            ip = header.split(",")[0].trim();
         } else {
             ip = httpRequest.getRemoteAddr();
         }

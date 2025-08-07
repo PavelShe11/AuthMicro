@@ -76,7 +76,8 @@ public class LoginService {
         loginSessionRepository.save(loginSession);
 
         refreshTokenSessionCreateAndSave(ip, userAgent, accountId,
-                (String) tokens.get("refreshToken"), (Timestamp) tokens.get("refreshTokenExpires"));
+                (String) tokens.get("refreshToken"),
+                new Timestamp((Long) tokens.get("refreshTokenExpires")));
 
 
         return LoginConfirmResponseBuild(tokens);
@@ -98,8 +99,8 @@ public class LoginService {
         Map<String, Object> tokens = new HashMap<>();
         tokens.put("accessToken", accessToken);
         tokens.put("refreshToken", refreshToken);
-        tokens.put("accessTokenExpires", jwtUtil.extractExpiration(accessToken));
-        tokens.put("refreshTokenExpires", jwtUtil.extractExpiration(refreshToken));
+        tokens.put("accessTokenExpires", jwtUtil.extractExpiration(accessToken).getTime());
+        tokens.put("refreshTokenExpires", jwtUtil.extractExpiration(refreshToken).getTime());
         return tokens;
     }
 
@@ -126,7 +127,7 @@ public class LoginService {
 
             if (session.getCodeExpires().before(Timestamp.from(Instant.now()))) {
                 String rawRefreshCode = codeGenerator.codeGenerate();
-                String hashedRefreshCode = codeGenerator.codeGenerate();
+                String hashedRefreshCode = codeGenerator.codeHash(rawRefreshCode);
                 long refreshCodeExpires = codeGenerator.codeExpiresGenerate();
                 session.setCode(hashedRefreshCode);
                 session.setCodeExpires(new Timestamp(refreshCodeExpires));
