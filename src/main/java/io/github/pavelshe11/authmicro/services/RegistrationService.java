@@ -14,11 +14,9 @@ import io.github.pavelshe11.authmicro.grpc.getAccountInfoProto;
 import io.github.pavelshe11.authmicro.store.entities.RegistrationSessionEntity;
 import io.github.pavelshe11.authmicro.store.repositories.RegistrationSessionRepository;
 import io.github.pavelshe11.authmicro.validators.RegistrationValidation;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -68,7 +66,7 @@ public class RegistrationService {
     }
 
 
-    public ResponseEntity<Void> confirmEmail(JsonNode registrationConfirmRequest, HttpServletRequest httpRequest) {
+    public void confirmEmail(JsonNode registrationConfirmRequest, String ip) {
 
         String email = registrationConfirmRequest.path("email").asText(null);
         String code = registrationConfirmRequest.path("code").asText(null);
@@ -87,14 +85,14 @@ public class RegistrationService {
                 .orElse(null);
 
         if (registrationSession == null) {
-            return ResponseEntity.ok().build();
+            return;
         }
 
         registrationValidator.checkIfCodeIsValid(code, registrationSession);
 
         registrationValidator.ensureCodeIsNotExpired(registrationSession);
 
-        userData.put("ip", httpRequest.getRemoteAddr());
+        userData.put("ip", ip);
 
         boolean isAccountCreated = accountCreationRequestGrpc.createAccount(userData);
 
@@ -102,8 +100,6 @@ public class RegistrationService {
         if (!isAccountCreated) {
             throw new ServerAnswerException();
         }
-
-        return ResponseEntity.ok().build();
     }
 
 
@@ -137,7 +133,9 @@ public class RegistrationService {
                 .orElse(null);
 
         if (registrationSession != null) {
-            registrationValidator.ensureCodeIsExpired(registrationSession);
+            if (!registrationValidator.IsCodeExpired(registrationSession)) {
+                return new RegistrationResponseDto(registrationSession.getCodeExpires().getTime());
+            }
 
             return refreshCodeAndReturnRegistrationResponseDto(
                     registrationSession,

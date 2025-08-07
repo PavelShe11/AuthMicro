@@ -1,6 +1,7 @@
 package io.github.pavelshe11.authmicro.api.server.http.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.services.RegistrationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +29,9 @@ public class RegistrationController {
     public ResponseEntity<Void> registrationConfirmEmail(
             @Valid @RequestBody JsonNode registrationConfirmRequest,
             HttpServletRequest httpRequest) {
-        return registrationService.confirmEmail(
-                registrationConfirmRequest, httpRequest);
+        String ip = httpRequest.getRemoteAddr();
+        registrationService.confirmEmail(
+                registrationConfirmRequest, ip);
+        return ResponseEntity.ok().build();
     }
 }

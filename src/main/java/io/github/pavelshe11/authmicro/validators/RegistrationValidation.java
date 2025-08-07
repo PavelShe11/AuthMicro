@@ -13,16 +13,21 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
 public class RegistrationValidation {
     private final PasswordEncoder passwordEncoder;
 
-    public void ensureCodeIsExpired(RegistrationSessionEntity session) {
+//    public void ensureCodeIsExpired(RegistrationSessionEntity session) {
+//        if (session.getCodeExpires().after(new Timestamp(System.currentTimeMillis()))) {
+//            throw new CodeVerificationException("error", "Код еще не истёк.");
+//        }
+//    }
+
+    public boolean IsCodeExpired(RegistrationSessionEntity session) {
         if (session.getCodeExpires().after(new Timestamp(System.currentTimeMillis()))) {
-            throw new CodeVerificationException("error", "Код еще не истёк.");
+            return false;
         }
     }
 
