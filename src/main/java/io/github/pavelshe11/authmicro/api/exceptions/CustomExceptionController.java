@@ -5,6 +5,7 @@ import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +33,7 @@ public class CustomExceptionController {
         List<FieldErrorDto> errors = ex.getErrors().stream()
                 .map(error -> new FieldErrorDto(
                         error.getField(),
-                        messageSource.getMessage(
-                                error.getMessage(), null, LocaleContextHolder.getLocale()
-                        )
+                        resolveMessage(error.getMessage())
                 )).toList();
 
         ErrorDto response = new ErrorDto(errorMessage, errors);
@@ -98,4 +97,13 @@ public class CustomExceptionController {
         ErrorDto response = new ErrorDto(contextMessage, errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    private String resolveMessage(String codeOrMessage) {
+        try {
+            return messageSource.getMessage(codeOrMessage, null, LocaleContextHolder.getLocale());
+        } catch (NoSuchMessageException e) {
+            return codeOrMessage;
+        }
+    }
 }
+
