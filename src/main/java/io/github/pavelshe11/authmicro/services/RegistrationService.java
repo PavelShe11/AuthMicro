@@ -62,7 +62,7 @@ public class RegistrationService {
         long codeExpires = registrationGeneratorService.codeExpiresGenerate();
         log.info("REGISTRATION_CODE email={} code={}", email, rawCode);
 
-        return returnNewRegistrationResponseDto(email, rawCode, new Timestamp(codeExpires));
+        return returnNewRegistrationResponseDto(email, hashedCode, new Timestamp(codeExpires));
     }
 
 
