@@ -137,12 +137,11 @@ public class RegistrationService {
                 return new RegistrationResponseDto(registrationSession.getCodeExpires().getTime());
             }
             String rawCode = registrationGeneratorService.codeGenerate();
-            String hashedCode = registrationGeneratorService.codeHash(rawCode);
             long codeExpires = registrationGeneratorService.codeExpiresGenerate();
 
             return refreshCodeAndReturnRegistrationResponseDto(
                     registrationSession,
-                    hashedCode, new Timestamp(codeExpires)
+                    rawCode, new Timestamp(codeExpires)
             );
         }
         return null;
