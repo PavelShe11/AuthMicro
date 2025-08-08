@@ -8,7 +8,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AuthoritiseConverter implements Converter<Jwt, Collection<GrantedAuthority>> {

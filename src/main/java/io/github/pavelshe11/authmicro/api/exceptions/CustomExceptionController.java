@@ -4,24 +4,40 @@ import io.github.pavelshe11.authmicro.api.dto.ErrorDto;
 import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @RequiredArgsConstructor
 @RestControllerAdvice
 public class CustomExceptionController {
+    private final MessageSource messageSource;
 
     @ExceptionHandler(FieldValidationException.class)
     public ResponseEntity<ErrorDto> handleFieldValidationExceptions(FieldValidationException ex) {
-        ErrorDto response = new ErrorDto(ex.getMessage(), ex.getErrors());
+
+        String errorMessage = messageSource.getMessage(
+                ex.getMessage(),
+                null,
+                LocaleContextHolder.getLocale()
+        );
+
+        List<FieldErrorDto> errors = ex.getErrors().stream()
+                .map(error -> new FieldErrorDto(
+                        error.getField(),
+                        messageSource.getMessage(
+                                error.getMessage(), null, LocaleContextHolder.getLocale()
+                        )
+                )).toList();
+
+        ErrorDto response = new ErrorDto(errorMessage, errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
@@ -29,7 +45,7 @@ public class CustomExceptionController {
     public ResponseEntity<ErrorDto> handleGeneralExceptions(Exception ex) {
         System.out.println(ex.getMessage());
         ErrorDto response = ErrorDto.builder()
-                .error("Внутренняя ошибка сервера")
+                .error(messageSource.getMessage("server.inner.error", null, LocaleContextHolder.getLocale()))
                 .build();
 
         return ResponseEntity
@@ -38,14 +54,20 @@ public class CustomExceptionController {
     }
 
     @ExceptionHandler(AbstractException.class)
-    public ResponseEntity<Map<String, String>> handleAbstractExceptions(AbstractException ex) {
-        Map<String, String> errorBody = new HashMap<>();
+    public ResponseEntity<ErrorDto> handleAbstractExceptions(AbstractException ex) {
+        String errorMessage = messageSource.getMessage(
+                ex.getMessageCode(),
+                null,
+                LocaleContextHolder.getLocale()
+        );
 
-        errorBody.put("error", ex.getTitle());
+        ErrorDto response = ErrorDto.builder()
+                .error(errorMessage)
+                .build();
 
         return ResponseEntity
                 .status(ex.getStatus())
-                .body(errorBody);
+                .body(response);
     }
 
 
@@ -59,11 +81,11 @@ public class CustomExceptionController {
 
         String contextMessage;
         if (uri.contains("/login")) {
-            contextMessage = "Ошибка входа.";
+            contextMessage = messageSource.getMessage("login.error", null, LocaleContextHolder.getLocale());
         } else if (uri.contains("/registration")) {
-            contextMessage = "Ошибка регистрации.";
+            contextMessage = messageSource.getMessage("registration.error", null, LocaleContextHolder.getLocale());
         } else {
-            contextMessage = "Ошибка валидации.";
+            contextMessage = messageSource.getMessage("validation.error", null, LocaleContextHolder.getLocale());
         }
 
         List<FieldErrorDto> errors = ex.getBindingResult()

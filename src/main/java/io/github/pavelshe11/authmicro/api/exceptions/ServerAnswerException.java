@@ -1,7 +1,9 @@
 package io.github.pavelshe11.authmicro.api.exceptions;
 
-public class ServerAnswerException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class ServerAnswerException extends AbstractException {
     public ServerAnswerException() {
-        super("Внутренняя ошибка сервера");
+        super("error.server.error", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

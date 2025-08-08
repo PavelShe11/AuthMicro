@@ -1,7 +1,6 @@
 package io.github.pavelshe11.authmicro.api.server.http.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.services.RegistrationService;
 import jakarta.servlet.http.HttpServletRequest;

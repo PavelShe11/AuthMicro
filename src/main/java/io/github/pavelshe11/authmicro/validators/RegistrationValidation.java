@@ -1,7 +1,7 @@
 package io.github.pavelshe11.authmicro.validators;
 
 import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
-import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.exceptions.CodeExpiredException;
 import io.github.pavelshe11.authmicro.api.exceptions.FieldValidationException;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
@@ -19,12 +19,6 @@ import java.util.List;
 public class RegistrationValidation {
     private final PasswordEncoder passwordEncoder;
 
-//    public void ensureCodeIsExpired(RegistrationSessionEntity session) {
-//        if (session.getCodeExpires().after(new Timestamp(System.currentTimeMillis()))) {
-//            throw new CodeVerificationException("error", "Код еще не истёк.");
-//        }
-//    }
-
     public boolean isCodeExpired(RegistrationSessionEntity session) {
         if (session.getCodeExpires().after(new Timestamp(System.currentTimeMillis()))) {
             return false;
@@ -34,13 +28,13 @@ public class RegistrationValidation {
 
     public void ensureCodeIsNotExpired(RegistrationSessionEntity session) {
         if (session.getCodeExpires().before(new Timestamp(System.currentTimeMillis()))) {
-            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код.");
+            throw new CodeExpiredException();
         }
     }
 
     public void checkIfCodeIsValid(String code, RegistrationSessionEntity registrationSession) {
         if (!passwordEncoder.matches(code, registrationSession.getCode()) || code.isBlank() || code == null) {
-            throw new InvalidCodeException("error", "Неверный код подтверждения.");
+            throw new InvalidCodeException();
         }
     }
 
@@ -48,9 +42,9 @@ public class RegistrationValidation {
         List<FieldErrorDto> fieldErrors = new ArrayList<>();
         if (email == null || email.trim().isEmpty()) {
             fieldErrors.add(
-                    new FieldErrorDto("email", "поле пустое.")
+                    new FieldErrorDto("email", "field.empty")
             );
-            throw new FieldValidationException("Ошибка регистрации", fieldErrors);
+            throw new FieldValidationException("registration.error", fieldErrors);
         }
         return email.trim();
     }
@@ -61,7 +55,7 @@ public class RegistrationValidation {
                     .map(err -> new FieldErrorDto(err.getField(), err.getMessage()))
                     .toList();
 
-            throw new FieldValidationException("Ошибка регистрации", fieldErrors);
+            throw new FieldValidationException("registration.error", fieldErrors);
 
         }
     }

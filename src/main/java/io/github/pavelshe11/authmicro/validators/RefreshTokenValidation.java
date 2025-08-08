@@ -1,6 +1,6 @@
 package io.github.pavelshe11.authmicro.validators;
 
-import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.exceptions.CodeIsNotExpiredException;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidTokenException;
 import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class RefreshTokenValidation {
 
     public void checkIfTokenNotExpiredOrThrow(Jwt decodedToken) {
         if (decodedToken.getExpiresAt() == null || decodedToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new CodeVerificationException("error", "Ошибка времени действия кода.");
+            throw new CodeIsNotExpiredException();
         }
     }
 

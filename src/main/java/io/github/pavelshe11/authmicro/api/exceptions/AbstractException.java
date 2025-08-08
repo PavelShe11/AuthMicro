@@ -5,12 +5,11 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public abstract class AbstractException extends RuntimeException {
-    private final String title;
+    private final String messageCode;
     private final HttpStatus status;
 
-    public AbstractException(String message, String title, HttpStatus status) {
-        super(message);
-        this.title = title;
+    public AbstractException( String messageCode, HttpStatus status) {
+        this.messageCode = messageCode;
         this.status = status;
     }
 

@@ -9,5 +9,4 @@ import lombok.Data;
 @Builder
 public class RegistrationResponseDto {
     private long codeExpires;
-//    private String code;
 }

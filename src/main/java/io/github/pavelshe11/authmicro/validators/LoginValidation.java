@@ -1,7 +1,7 @@
 package io.github.pavelshe11.authmicro.validators;
 
 import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
-import io.github.pavelshe11.authmicro.api.exceptions.CodeVerificationException;
+import io.github.pavelshe11.authmicro.api.exceptions.CodeExpiredException;
 import io.github.pavelshe11.authmicro.api.exceptions.FieldValidationException;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
@@ -24,22 +24,22 @@ public class LoginValidation {
         List<FieldErrorDto> fieldErrors = new ArrayList<>();
         if (email == null || email.trim().isEmpty()) {
             fieldErrors.add(
-                    new FieldErrorDto("email", "поле пустое.")
+                    new FieldErrorDto("email", "field.empty")
             );
-            throw new FieldValidationException("Ошибка входа", fieldErrors);
+            throw new FieldValidationException("login.error", fieldErrors);
         }
         return email.trim();
     }
 
     public void checkIfCodeIsValid(LoginSessionEntity session, String code) {
         if (!passwordEncoder.matches(code, session.getCode())) {
-            throw new InvalidCodeException("error", "Неверный код подтверждения.");
+            throw new InvalidCodeException();
         }
     }
 
     public void ensureCodeIsNotExpired(LoginSessionEntity session) {
         if (session.getCodeExpires().before(new Timestamp(System.currentTimeMillis()))) {
-            throw new CodeVerificationException("error", "Код подтверждения истёк. Пожалуйста, запросите новый код.");
+            throw new CodeExpiredException();
         }
     }
 
@@ -50,7 +50,7 @@ public class LoginValidation {
         LoginSessionEntity loginSession = loginSessionOpt.get();
 
         if (loginSession.getAccountId() == null) {
-            throw new InvalidCodeException("error", "Неверный код подтверждения.");
+            throw new InvalidCodeException();
         }
         return loginSession;
     }
