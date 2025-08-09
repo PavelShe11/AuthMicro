@@ -25,4 +25,15 @@ public class GetAccountInfoGrpc {
 
         return Optional.of(response);
     }
+
+    public boolean checkIfAccountExistsById(String accountId) {
+        getAccountInfoProto.CheckAccountByIdRequest request =
+                getAccountInfoProto.CheckAccountByIdRequest.newBuilder()
+                        .setAccountId(accountId)
+                        .build();
+
+        getAccountInfoProto.CheckAccountByIdResponse response = getAccountInfoServiceBlockingStub.getAccountById(request);
+
+        return response.getAccept();
+    }
 }

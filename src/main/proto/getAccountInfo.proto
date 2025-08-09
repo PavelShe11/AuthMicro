@@ -7,14 +7,23 @@ import "error.proto";
 
 service GetAccountInfoService {
   rpc getAccountInfo (GetAccountInfoRequest) returns (GetAccountInfoResponse) {}
+  rpc getAccountById (CheckAccountByIdRequest) returns (CheckAccountByIdResponse) {}
 }
 
 message GetAccountInfoRequest {
   string email = 1;
 }
 
+message CheckAccountByIdRequest {
+  string accountId = 1;
+}
+
 message GetAccountInfoResponse {
   bool accept = 1;
   string accountId = 2;
   string role = 3;
+}
+
+message CheckAccountByIdResponse {
+  bool accept = 1;
 }

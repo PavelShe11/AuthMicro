@@ -1,5 +1,6 @@
 package io.github.pavelshe11.authmicro.services;
 
+import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
 import io.github.pavelshe11.authmicro.api.dto.responses.RefreshTokenResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidTokenException;
 import io.github.pavelshe11.authmicro.store.entities.RefreshTokenSessionEntity;
@@ -21,6 +22,7 @@ public class RefreshTokenService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenValidation refreshTokenValidator;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+    private final GetAccountInfoGrpc getAccountInfoGrpc;
 
     @Transactional
     public RefreshTokenResponseDto refreshTokens(String refreshToken) {
@@ -36,6 +38,11 @@ public class RefreshTokenService {
         String accountIdStr = decodedToken.getClaimAsString("accountId");
         List<String> roles = decodedToken.getClaimAsStringList("roles");
         boolean isAdmin = roles.contains("admin");
+
+        boolean isAccountExists = getAccountInfoGrpc.checkIfAccountExistsById(accountIdStr);
+        if (!isAccountExists) {
+            throw new InvalidTokenException();
+        }
 
         UUID accountId = UUID.fromString(accountIdStr);
 

@@ -123,7 +123,7 @@ public class LoginService {
         String accountIdStr = response.getAccountId();
         UUID accountId = UUID.fromString(accountIdStr);
 
-        Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByAccountIdAndEmail(accountId, email);
+        Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByEmail(email);
 
         if (loginSessionOpt.isPresent()) {
             LoginSessionEntity session = loginSessionOpt.get();
@@ -132,6 +132,7 @@ public class LoginService {
                 String rawRefreshCode = codeGenerator.codeGenerate();
                 String hashedRefreshCode = codeGenerator.codeHash(rawRefreshCode);
                 long refreshCodeExpires = codeGenerator.codeExpiresGenerate();
+                session.setAccountId(accountId);
                 session.setCode(hashedRefreshCode);
                 session.setCodeExpires(new Timestamp(refreshCodeExpires));
                 log.info("LOGIN_CODE email={} code={}", email, rawRefreshCode);
