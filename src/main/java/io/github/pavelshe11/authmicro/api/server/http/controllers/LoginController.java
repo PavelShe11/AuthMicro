@@ -21,7 +21,7 @@ public class LoginController {
 
     @PostMapping("/sendCodeEmail")
     public LoginResponseDto sendLoginCode(
-            @Valid @RequestBody LoginRequestDto loginRequest
+            @RequestBody LoginRequestDto loginRequest
     ) {
         // TODO: send email
         return loginService.login(loginRequest.getEmail());
@@ -29,7 +29,7 @@ public class LoginController {
 
     @PostMapping("/confirmEmail")
     public LoginConfirmResponseDto confirmLoginEmail(
-            @Valid @RequestBody LoginConfirmRequestDto loginConfirmRequest,
+            @RequestBody LoginConfirmRequestDto loginConfirmRequest,
             HttpServletRequest httpRequest
     ) {
         String ip;

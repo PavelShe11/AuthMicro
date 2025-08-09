@@ -66,4 +66,15 @@ public class RegistrationValidation {
         }
         return code.trim();
     }
+
+    public void validateEmailFormatOrThrow(String email) {
+        List<FieldErrorDto> fieldErrors = new ArrayList<>();
+        String emailPattern = "^[\\w-.]+@[\\w-]+(\\.[\\w-]+)*\\.[a-z]{2,}$";
+        if (email == null || !email.matches(emailPattern)) {
+            fieldErrors.add(
+                    new FieldErrorDto("email", "email.format.incorrect")
+            );
+            throw new FieldValidationException("registration.error", fieldErrors);
+        }
+    }
 }

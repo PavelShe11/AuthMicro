@@ -19,14 +19,14 @@ public class RegistrationController {
     private final RegistrationService registrationService;
 
     @PostMapping()
-    public RegistrationResponseDto sendRegistrationCode(@Valid @RequestBody JsonNode registrationRequest) {
+    public RegistrationResponseDto sendRegistrationCode(@RequestBody JsonNode registrationRequest) {
         // TODO: send email
         return registrationService.register(registrationRequest);
     }
 
     @PostMapping("/confirmEmail")
     public ResponseEntity<Void> registrationConfirmEmail(
-            @Valid @RequestBody JsonNode registrationConfirmRequest,
+            @RequestBody JsonNode registrationConfirmRequest,
             HttpServletRequest httpRequest) {
         String ip = httpRequest.getRemoteAddr();
         registrationService.confirmEmail(

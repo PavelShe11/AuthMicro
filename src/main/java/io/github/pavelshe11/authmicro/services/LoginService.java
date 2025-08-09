@@ -40,6 +40,7 @@ public class LoginService {
     public LoginResponseDto login(String email) {
 
         email = loginValidator.getTrimmedEmailOrThrow(email);
+        loginValidator.validateEmailFormatOrThrow(email);
 
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
                 getAccountInfoGrpc.getAccountInfo(email);
@@ -56,6 +57,7 @@ public class LoginService {
     @Transactional
     public LoginConfirmResponseDto confirmLoginEmail(String email, String code, String ip, String userAgent) {
         email = loginValidator.getTrimmedEmailOrThrow(email);
+        loginValidator.validateEmailFormatOrThrow(email);
         code = loginValidator.getTrimmedCodeOrThrow(code);
 
         Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByEmail(email);

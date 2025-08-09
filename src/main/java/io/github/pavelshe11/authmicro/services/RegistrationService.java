@@ -41,6 +41,7 @@ public class RegistrationService {
 
         String email = registrationRequest.path("email").asText(null);
         email = registrationValidator.getTrimmedEmailOrThrow(email);
+        registrationValidator.validateEmailFormatOrThrow(email);
 
         Map<String, Object> userData = convertJsonNodeToMap(registrationRequest);
 
@@ -74,6 +75,7 @@ public class RegistrationService {
         String code = registrationConfirmRequest.path("code").asText(null);
 
         email = registrationValidator.getTrimmedEmailOrThrow(email);
+        registrationValidator.validateEmailFormatOrThrow(email);
         code = registrationValidator.getTrimmedCodeOrThrow(code);
 
         Map<String, Object> userData = convertJsonNodeToMap(registrationConfirmRequest);

@@ -9,6 +9,5 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class LoginRequestDto {
-    @Email(message = "Некорректный формат Email.")
     private String email;
 }
