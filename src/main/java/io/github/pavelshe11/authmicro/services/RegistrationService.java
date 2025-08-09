@@ -93,6 +93,13 @@ public class RegistrationService {
 
         registrationValidator.ensureCodeIsNotExpired(registrationSession);
 
+        Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
+                getAccountInfoGrpc.getAccountInfo(email);
+
+        if (accountInfoOpt.isPresent()) {
+            throw new InvalidCodeException();
+        }
+
         userData.put("ip", ip);
 
         boolean isAccountCreated = accountCreationRequestGrpc.createAccount(userData);
