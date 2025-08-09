@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option java_package = "io.github.pavelshe11.auth.grpc";
+option java_outer_classname = "ErrorProto";
+
+message FieldError {
+  string field = 1;
+  string message = 2;
+}
