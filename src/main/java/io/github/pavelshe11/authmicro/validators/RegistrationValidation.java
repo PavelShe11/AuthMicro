@@ -59,4 +59,11 @@ public class RegistrationValidation {
 
         }
     }
+
+    public String getTrimmedCodeOrThrow(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            throw new InvalidCodeException();
+        }
+        return code.trim();
+    }
 }

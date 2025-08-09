@@ -56,6 +56,8 @@ public class LoginService {
     @Transactional
     public LoginConfirmResponseDto confirmLoginEmail(String email, String code, String ip, String userAgent) {
         email = loginValidator.getTrimmedEmailOrThrow(email);
+        code = loginValidator.getTrimmedCodeOrThrow(code);
+
         Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByEmail(email);
 
         LoginSessionEntity loginSession = loginValidator.validateLoginSessionOrThrow(loginSessionOpt);

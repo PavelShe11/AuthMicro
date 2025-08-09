@@ -54,4 +54,11 @@ public class LoginValidation {
         }
         return loginSession;
     }
+
+    public String getTrimmedCodeOrThrow(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            throw new InvalidCodeException();
+        }
+        return code.trim();
+    }
 }
