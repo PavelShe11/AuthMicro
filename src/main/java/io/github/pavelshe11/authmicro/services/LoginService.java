@@ -4,6 +4,7 @@ package io.github.pavelshe11.authmicro.services;
 import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
+import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.components.CodeGenerator;
 import io.github.pavelshe11.authmicro.grpc.getAccountInfoProto;
@@ -61,12 +62,12 @@ public class LoginService {
         loginValidator.ensureCodeIsNotExpired(loginSession);
 
         getAccountInfoProto.GetAccountInfoResponse accountInfo = getAccountInfoGrpc.getAccountInfo(email)
-                .orElseThrow(() -> new ServerAnswerException());
+                .orElseThrow(() -> new InvalidCodeException());
 
 
         UUID accountId = UUID.fromString(accountInfo.getAccountId());
         if (!accountId.equals(loginSession.getAccountId())) {
-            throw new ServerAnswerException();
+            throw new InvalidCodeException();
         }
 
         boolean isAdmin = "admin".equals(accountInfo.getRole());

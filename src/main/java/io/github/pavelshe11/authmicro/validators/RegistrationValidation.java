@@ -33,7 +33,7 @@ public class RegistrationValidation {
     }
 
     public void checkIfCodeIsValid(String code, RegistrationSessionEntity registrationSession) {
-        if (!passwordEncoder.matches(code, registrationSession.getCode()) || code.isBlank() || code == null) {
+        if (code == null || code.isBlank() || !passwordEncoder.matches(code, registrationSession.getCode())) {
             throw new InvalidCodeException();
         }
     }

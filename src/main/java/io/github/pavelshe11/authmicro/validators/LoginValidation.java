@@ -32,7 +32,7 @@ public class LoginValidation {
     }
 
     public void checkIfCodeIsValid(LoginSessionEntity session, String code) {
-        if (!passwordEncoder.matches(code, session.getCode())) {
+        if (code == null || code.isBlank() || !passwordEncoder.matches(code, session.getCode())) {
             throw new InvalidCodeException();
         }
     }
@@ -45,7 +45,7 @@ public class LoginValidation {
 
     public LoginSessionEntity validateLoginSessionOrThrow(Optional<LoginSessionEntity> loginSessionOpt) {
         if (loginSessionOpt.isEmpty()) {
-            throw new ServerAnswerException();
+            throw new InvalidCodeException();
         }
         LoginSessionEntity loginSession = loginSessionOpt.get();
 
