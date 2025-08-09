@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface RegistrationSessionRepository extends JpaRepository<RegistrationSessionEntity, UUID> {
     Optional<RegistrationSessionEntity> findByEmail(String email);
+
+    void deleteByEmail(String email);
 }

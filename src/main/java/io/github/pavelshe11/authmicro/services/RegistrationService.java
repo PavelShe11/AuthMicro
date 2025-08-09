@@ -104,22 +104,25 @@ public class RegistrationService {
     }
 
 
-
     private Map<String, Object> convertJsonNodeToMap(JsonNode registrationRequest) {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(registrationRequest, new TypeReference<>() {});
+        return mapper.convertValue(registrationRequest, new TypeReference<>() {
+        });
     }
 
     private RegistrationResponseDto fakeRegistrationSessionCreateAndSave(String email) {
         long fakeCodeExpires = registrationGeneratorService.codeExpiresGenerate();
 
-        RegistrationSessionEntity fakeSession = RegistrationSessionEntity.builder()
-                .email(email)
-                .acceptedPrivacyPolicy(false)
-                .acceptedPersonalDataProcessing(false)
-                .code("")
-                .codeExpires(new Timestamp(fakeCodeExpires))
-                .build();
+        RegistrationSessionEntity fakeSession = registrationSessionRepository
+                .findByEmail(email)
+                .orElseGet(() -> new RegistrationSessionEntity());
+
+        fakeSession.setEmail(email);
+        fakeSession.setAcceptedPrivacyPolicy(false);
+        fakeSession.setAcceptedPersonalDataProcessing(false);
+        fakeSession.setCode("");
+        fakeSession.setCodeExpires(new Timestamp(fakeCodeExpires));
+
         log.info("FAKE_REGISTRATION_CODE email={} code={}", email, "");
 
         registrationSessionRepository.save(fakeSession);
