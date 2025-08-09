@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -52,6 +53,7 @@ public class LoginService {
 
     }
 
+    @Transactional
     public LoginConfirmResponseDto confirmLoginEmail(String email, String code, String ip, String userAgent) {
         email = loginValidator.getTrimmedEmailOrThrow(email);
         Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByEmail(email);
@@ -74,12 +76,12 @@ public class LoginService {
 
         Map<String, Object> tokens = generateTokens(accountId, isAdmin);
 
-        loginSessionRepository.save(loginSession);
 
         refreshTokenSessionCreateAndSave(ip, userAgent, accountId,
                 (String) tokens.get("refreshToken"),
                 new Timestamp((Long) tokens.get("refreshTokenExpires")));
 
+        loginSessionRepository.delete(loginSession);
 
         return LoginConfirmResponseBuild(tokens);
     }

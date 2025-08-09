@@ -9,6 +9,7 @@ import io.github.pavelshe11.authmicro.validators.RefreshTokenValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -21,6 +22,7 @@ public class RefreshTokenService {
     private final RefreshTokenValidation refreshTokenValidator;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
 
+    @Transactional
     public RefreshTokenResponseDto refreshTokens(String refreshToken) {
 
         refreshTokenValidator.checkIfTokenExistsOrThrow(refreshToken);
@@ -53,6 +55,8 @@ public class RefreshTokenService {
                 .userAgent(oldSession.getUserAgent())
                 .expiresAt(refreshTokenExpires)
                 .build();
+
+        refreshTokenSessionRepository.delete(oldSession);
 
         refreshTokenSessionRepository.save(session);
 

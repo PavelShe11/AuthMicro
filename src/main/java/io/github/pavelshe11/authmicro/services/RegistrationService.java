@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class RegistrationService {
         return returnNewRegistrationResponseDto(email, hashedCode, new Timestamp(codeExpires));
     }
 
-
+    @Transactional
     public void confirmEmail(JsonNode registrationConfirmRequest, String ip) {
 
         String email = registrationConfirmRequest.path("email").asText(null);
@@ -108,6 +109,8 @@ public class RegistrationService {
         if (!isAccountCreated) {
             throw new ServerAnswerException();
         }
+
+        registrationSessionRepository.delete(registrationSession);
     }
 
 

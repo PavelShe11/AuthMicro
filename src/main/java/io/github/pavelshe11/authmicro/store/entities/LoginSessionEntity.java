@@ -23,7 +23,7 @@ public class LoginSessionEntity {
     @Column(name = "account_id")
     private UUID accountId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
