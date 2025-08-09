@@ -35,6 +35,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("io.grpc:grpc-services")
     implementation("net.devh:grpc-client-spring-boot-starter:2.15.0.RELEASE")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.mockito:mockito-core:5.12.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
 //    implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
 
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
@@ -51,6 +54,7 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     runtimeOnly ("io.grpc:grpc-netty-shaded:1.73.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor ("org.mapstruct:mapstruct-processor:1.5.5.Final")
 }
