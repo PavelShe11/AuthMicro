@@ -29,7 +29,7 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/v1/login/sendCodeEmail").permitAll()
                                 .requestMatchers("/auth/v1/login/confirmEmail").permitAll()
                                 .requestMatchers("/actuator/**").permitAll()
-                                .requestMatchers("/auth/v1/refreshToken").authenticated()
+                                .requestMatchers("/auth/v1/refreshToken").permitAll()
                                 .anyRequest().authenticated()
                 ).sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
