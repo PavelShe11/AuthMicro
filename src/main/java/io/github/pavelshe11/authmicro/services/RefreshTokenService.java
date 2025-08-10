@@ -47,7 +47,7 @@ public class RefreshTokenService {
         UUID accountId = UUID.fromString(accountIdStr);
 
         String newAccessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
-        String newRefreshToken = jwtUtil.generateAccessToken(accountId, isAdmin);
+        String newRefreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
 
         Timestamp accessTokenExpires = jwtUtil.extractExpiration(newAccessToken);
         Timestamp refreshTokenExpires = jwtUtil.extractExpiration(newRefreshToken);
