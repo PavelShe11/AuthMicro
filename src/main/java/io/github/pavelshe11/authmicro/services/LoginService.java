@@ -43,7 +43,7 @@ public class LoginService {
         loginValidator.validateEmailFormatOrThrow(email);
 
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
-                getAccountInfoGrpc.getAccountInfo(email);
+                getAccountInfoGrpc.getAccountInfoByEmail(email);
 
         if (accountInfoOpt.isEmpty()) {
             return fakeLoginSessionCreateAndSave(email);
@@ -67,16 +67,26 @@ public class LoginService {
         loginValidator.checkIfCodeIsValid(loginSession, code);
         loginValidator.ensureCodeIsNotExpired(loginSession);
 
-        getAccountInfoProto.GetAccountInfoResponse accountInfo = getAccountInfoGrpc.getAccountInfo(email)
+        getAccountInfoProto.GetAccountInfoResponse accountInfo = getAccountInfoGrpc.getAccountInfoByEmail(email)
                 .orElseThrow(() -> new InvalidCodeException());
 
+        Map<String, com.google.protobuf.Value> userData = accountInfo.getUserDataMap();
 
-        UUID accountId = UUID.fromString(accountInfo.getAccountId());
+        String accountIdStr = Optional.ofNullable(userData.get("account_id"))
+                .map(com.google.protobuf.Value::getStringValue)
+                .orElseThrow(() -> new InvalidCodeException());
+
+        String role = Optional.ofNullable(userData.get("role"))
+                .map(com.google.protobuf.Value::getStringValue)
+                .orElse("user");
+
+        UUID accountId = UUID.fromString(accountIdStr);
+
         if (!accountId.equals(loginSession.getAccountId())) {
             throw new InvalidCodeException();
         }
 
-        boolean isAdmin = "admin".equals(accountInfo.getRole());
+        boolean isAdmin = "admin".equals(role);
 
         Map<String, Object> tokens = generateTokens(accountId, isAdmin);
 
@@ -124,7 +134,12 @@ public class LoginService {
     }
 
     private LoginResponseDto validLoginSessionCreateAndSave(getAccountInfoProto.GetAccountInfoResponse response, String email) {
-        String accountIdStr = response.getAccountId();
+
+        Map<String, com.google.protobuf.Value> userData = response.getUserDataMap();
+
+        String accountIdStr = Optional.ofNullable(userData.get("account_id"))
+                .map(com.google.protobuf.Value::getStringValue)
+                .orElseThrow(() -> new ServerAnswerException());
         UUID accountId = UUID.fromString(accountIdStr);
 
         Optional<LoginSessionEntity> loginSessionOpt = loginSessionRepository.findByEmail(email);

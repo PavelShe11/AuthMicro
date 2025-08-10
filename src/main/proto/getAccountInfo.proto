@@ -4,26 +4,21 @@ option java_package = "io.github.pavelshe11.authmicro.grpc";
 option java_outer_classname = "getAccountInfoProto";
 
 import "error.proto";
+import "google/protobuf/struct.proto";
 
 service GetAccountInfoService {
-  rpc getAccountInfo (GetAccountInfoRequest) returns (GetAccountInfoResponse) {}
-  rpc getAccountById (CheckAccountByIdRequest) returns (CheckAccountByIdResponse) {}
+  rpc getAccountInfoByEmail (GetAccountInfoByEmailRequest) returns (GetAccountInfoResponse) {}
+  rpc getAccountById (GetAccountByIdRequest) returns (GetAccountInfoResponse) {}
 }
 
-message GetAccountInfoRequest {
+message GetAccountInfoByEmailRequest {
   string email = 1;
 }
 
-message CheckAccountByIdRequest {
+message GetAccountByIdRequest {
   string accountId = 1;
 }
 
 message GetAccountInfoResponse {
-  bool accept = 1;
-  string accountId = 2;
-  string role = 3;
-}
-
-message CheckAccountByIdResponse {
-  bool accept = 1;
+  map<string, google.protobuf.Value> userData = 1;
 }

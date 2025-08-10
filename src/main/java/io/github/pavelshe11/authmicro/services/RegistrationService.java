@@ -51,9 +51,9 @@ public class RegistrationService {
         registrationValidator.validateUserDataOrThrow(accountValidatorResponse);
 
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
-                getAccountInfoGrpc.getAccountInfo(email);
+                getAccountInfoGrpc.getAccountInfoByEmail(email);
 
-        if (accountInfoOpt.isPresent()) {
+        if (accountInfoOpt.isPresent() && accountExists(accountInfoOpt.get())) {
             return fakeRegistrationSessionCreateAndSave(email);
         }
 
@@ -98,9 +98,9 @@ public class RegistrationService {
         registrationValidator.ensureCodeIsNotExpired(registrationSession);
 
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
-                getAccountInfoGrpc.getAccountInfo(email);
+                getAccountInfoGrpc.getAccountInfoByEmail(email);
 
-        if (accountInfoOpt.isPresent()) {
+        if (accountInfoOpt.isPresent() && accountExists(accountInfoOpt.get())) {
             throw new InvalidCodeException();
         }
 
@@ -189,5 +189,9 @@ public class RegistrationService {
         return new RegistrationResponseDto(
                 registrationSession.getCodeExpires().getTime()
         );
+    }
+
+    private boolean accountExists(getAccountInfoProto.GetAccountInfoResponse response) {
+        return response.getUserDataMap().containsKey("account_id");
     }
 }

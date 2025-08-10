@@ -12,28 +12,34 @@ public class GetAccountInfoGrpc {
     @GrpcClient("get-account-info-service")
     private GetAccountInfoServiceGrpc.GetAccountInfoServiceBlockingStub getAccountInfoServiceBlockingStub;
 
-    public Optional<getAccountInfoProto.GetAccountInfoResponse> getAccountInfo(String email) {
-        getAccountInfoProto.GetAccountInfoRequest request =
-                getAccountInfoProto.GetAccountInfoRequest.newBuilder()
+    public Optional<getAccountInfoProto.GetAccountInfoResponse> getAccountInfoByEmail(String email) {
+        getAccountInfoProto.GetAccountInfoByEmailRequest request =
+                getAccountInfoProto.GetAccountInfoByEmailRequest.newBuilder()
                         .setEmail(email)
                         .build();
-        getAccountInfoProto.GetAccountInfoResponse response = getAccountInfoServiceBlockingStub.getAccountInfo(request);
+        getAccountInfoProto.GetAccountInfoResponse response =
+                getAccountInfoServiceBlockingStub.getAccountInfoByEmail(request);
 
-        if (response.getAccountId() == null || response.getAccountId().isEmpty()) {
+        if (response.getUserDataMap().isEmpty()) {
             return Optional.empty();
         }
 
         return Optional.of(response);
     }
 
-    public boolean checkIfAccountExistsById(String accountId) {
-        getAccountInfoProto.CheckAccountByIdRequest request =
-                getAccountInfoProto.CheckAccountByIdRequest.newBuilder()
+    public Optional<getAccountInfoProto.GetAccountInfoResponse> getAccountInfoById(String accountId) {
+        getAccountInfoProto.GetAccountByIdRequest request =
+                getAccountInfoProto.GetAccountByIdRequest.newBuilder()
                         .setAccountId(accountId)
                         .build();
 
-        getAccountInfoProto.CheckAccountByIdResponse response = getAccountInfoServiceBlockingStub.getAccountById(request);
+        getAccountInfoProto.GetAccountInfoResponse response =
+                getAccountInfoServiceBlockingStub.getAccountById(request);
 
-        return response.getAccept();
+        if (response.getUserDataMap().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(response);
     }
 }

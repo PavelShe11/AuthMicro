@@ -1,5 +1,6 @@
 package io.github.pavelshe11.authmicro.services;
 
+import com.google.protobuf.Value;
 import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
 import io.github.pavelshe11.authmicro.api.dto.responses.RefreshTokenResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidTokenException;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -36,15 +38,20 @@ public class RefreshTokenService {
         refreshTokenValidator.checkIfTokenNotExpiredOrThrow(decodedToken);
 
         String accountIdStr = decodedToken.getClaimAsString("accountId");
-        List<String> roles = decodedToken.getClaimAsStringList("roles");
-        boolean isAdmin = roles.contains("admin");
+        UUID accountId = UUID.fromString(accountIdStr);
 
-        boolean isAccountExists = getAccountInfoGrpc.checkIfAccountExistsById(accountIdStr);
-        if (!isAccountExists) {
+        var accountInfoOpt = getAccountInfoGrpc.getAccountInfoById(accountIdStr);
+
+        if (accountInfoOpt.isEmpty()) {
             throw new InvalidTokenException();
         }
+        var accountInfo = accountInfoOpt.get();
+        Map<String, Value> userData = accountInfo.getUserDataMap();
 
-        UUID accountId = UUID.fromString(accountIdStr);
+        String role = userData.getOrDefault("role", Value.newBuilder().setStringValue("").build()).getStringValue();
+        boolean isAdmin = "admin".equalsIgnoreCase(role);
+
+        String currentIp = userData.getOrDefault("ip", Value.newBuilder().setStringValue("").build()).getStringValue();
 
         String newAccessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
         String newRefreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
@@ -58,7 +65,7 @@ public class RefreshTokenService {
         RefreshTokenSessionEntity session = RefreshTokenSessionEntity.builder()
                 .accountId(accountId)
                 .refreshToken(newRefreshToken)
-                .ip(oldSession.getIp())
+                .ip(currentIp)
                 .userAgent(oldSession.getUserAgent())
                 .expiresAt(refreshTokenExpires)
                 .build();
