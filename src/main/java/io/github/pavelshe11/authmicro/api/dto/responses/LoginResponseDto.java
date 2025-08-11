@@ -10,4 +10,5 @@ import lombok.Data;
 @Builder
 public class LoginResponseDto {
     private long codeExpires;
+    private String codePattern;
 }

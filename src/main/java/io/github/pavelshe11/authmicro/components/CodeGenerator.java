@@ -1,6 +1,7 @@
 package io.github.pavelshe11.authmicro.components;
 
 import com.github.curiousoddman.rgxgen.RgxGen;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +15,7 @@ import java.util.Random;
 public class CodeGenerator {
 
     private final int codeLifetimeMinutes;
+    @Getter
     private final String codePattern;
     private final PasswordEncoder passwordEncoder;
 
@@ -40,4 +42,5 @@ public class CodeGenerator {
     public long codeExpiresGenerate() {
         return Instant.now().plus(codeLifetimeMinutes, ChronoUnit.MINUTES).toEpochMilli();
     }
+
 }

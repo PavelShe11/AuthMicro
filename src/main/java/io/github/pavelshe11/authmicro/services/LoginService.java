@@ -164,9 +164,9 @@ public class LoginService {
                 session.setCodeExpires(new Timestamp(refreshCodeExpires));
                 log.info("LOGIN_CODE email={} code={}", email, rawRefreshCode);
                 loginSessionRepository.save(session);
-                return new LoginResponseDto(refreshCodeExpires);
+                return new LoginResponseDto(refreshCodeExpires, codeGenerator.getCodePattern());
             }
-            return new LoginResponseDto(session.getCodeExpires().getTime());
+            return new LoginResponseDto(session.getCodeExpires().getTime(), codeGenerator.getCodePattern());
         }
 
         String rawCode = codeGenerator.codeGenerate();
@@ -180,7 +180,7 @@ public class LoginService {
                 .build();
         log.info("LOGIN_CODE email={} code={}", email, rawCode);
         loginSessionRepository.save(loginSession);
-        return new LoginResponseDto(codeExpires);
+        return new LoginResponseDto(codeExpires, codeGenerator.getCodePattern());
 
     }
 
@@ -197,7 +197,7 @@ public class LoginService {
         loginSessionRepository.findByEmail(email)
                 .ifPresent((session) -> loginSessionRepository.delete(session));
         loginSessionRepository.save(loginSession);
-        return new LoginResponseDto(fakeCodeExpires);
+        return new LoginResponseDto(fakeCodeExpires, codeGenerator.getCodePattern());
     }
 
 }

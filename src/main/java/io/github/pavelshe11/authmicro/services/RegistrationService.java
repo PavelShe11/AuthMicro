@@ -29,7 +29,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RegistrationService {
     private final RegistrationSessionRepository registrationSessionRepository;
-    private final CodeGenerator registrationGeneratorService;
+    private final CodeGenerator codeGenerator;
     private final AccountCreationRequestGrpc accountCreationRequestGrpc;
     private final RegistrationValidation registrationValidator;
     private final AccountValidatorGrpc accountValidatorGrpc;
@@ -64,9 +64,9 @@ public class RegistrationService {
         RegistrationResponseDto existingRegistrationSession = handleExistingRegistrationSession(email);
         if (existingRegistrationSession != null) return existingRegistrationSession;
 
-        String rawCode = registrationGeneratorService.codeGenerate();
-        String hashedCode = registrationGeneratorService.codeHash(rawCode);
-        long codeExpires = registrationGeneratorService.codeExpiresGenerate();
+        String rawCode = codeGenerator.codeGenerate();
+        String hashedCode = codeGenerator.codeHash(rawCode);
+        long codeExpires = codeGenerator.codeExpiresGenerate();
         log.info("REGISTRATION_CODE email={} code={}", email, rawCode);
 
         return returnNewRegistrationResponseDto(email, hashedCode, new Timestamp(codeExpires));
@@ -128,7 +128,7 @@ public class RegistrationService {
     }
 
     private RegistrationResponseDto fakeRegistrationSessionCreateAndSave(String email) {
-        long fakeCodeExpires = registrationGeneratorService.codeExpiresGenerate();
+        long fakeCodeExpires = codeGenerator.codeExpiresGenerate();
 
         RegistrationSessionEntity fakeSession = registrationSessionRepository
                 .findByEmail(email)
@@ -144,7 +144,7 @@ public class RegistrationService {
 
         registrationSessionRepository.save(fakeSession);
 
-        return new RegistrationResponseDto(fakeCodeExpires);
+        return new RegistrationResponseDto(fakeCodeExpires, codeGenerator.getCodePattern());
     }
 
 
@@ -155,10 +155,11 @@ public class RegistrationService {
 
         if (registrationSession != null) {
             if (!registrationValidator.isCodeExpired(registrationSession)) {
-                return new RegistrationResponseDto(registrationSession.getCodeExpires().getTime());
+                return new RegistrationResponseDto(registrationSession.getCodeExpires().getTime(),
+                        codeGenerator.getCodePattern());
             }
-            String rawCode = registrationGeneratorService.codeGenerate();
-            long codeExpires = registrationGeneratorService.codeExpiresGenerate();
+            String rawCode = codeGenerator.codeGenerate();
+            long codeExpires = codeGenerator.codeExpiresGenerate();
 
             return refreshCodeAndReturnRegistrationResponseDto(
                     registrationSession,
@@ -169,13 +170,14 @@ public class RegistrationService {
     }
 
     private RegistrationResponseDto refreshCodeAndReturnRegistrationResponseDto(RegistrationSessionEntity registrationSession, String code, Timestamp codeExpires) {
-        String hashedCode = registrationGeneratorService.codeHash(code);
+        String hashedCode = codeGenerator.codeHash(code);
         registrationSession.setCode(hashedCode);
         registrationSession.setCodeExpires(codeExpires);
         registrationSessionRepository.save(registrationSession);
         log.info("REGISTRATION_CODE email={} code={}", registrationSession.getEmail(), code);
 
-        return new RegistrationResponseDto(codeExpires.getTime());
+        return new RegistrationResponseDto(codeExpires.getTime(),
+                codeGenerator.getCodePattern());
     }
 
     private RegistrationResponseDto returnNewRegistrationResponseDto(String email, String code, Timestamp codeExpires) {
@@ -191,7 +193,8 @@ public class RegistrationService {
                 );
 
         return new RegistrationResponseDto(
-                registrationSession.getCodeExpires().getTime()
+                registrationSession.getCodeExpires().getTime(),
+                codeGenerator.getCodePattern()
         );
     }
 
