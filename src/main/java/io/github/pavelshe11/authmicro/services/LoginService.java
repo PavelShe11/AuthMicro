@@ -45,7 +45,7 @@ public class LoginService {
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
                 getAccountInfoGrpc.getAccountInfoByEmail(email);
 
-        if (accountInfoOpt.isEmpty()) {
+        if (accountInfoOpt.isEmpty() || !accountInfoOpt.get().getUserDataMap().containsKey("account_id")) {
             return fakeLoginSessionCreateAndSave(email);
         }
         getAccountInfoProto.GetAccountInfoResponse response = accountInfoOpt.get();
@@ -67,8 +67,15 @@ public class LoginService {
         loginValidator.checkIfCodeIsValid(loginSession, code);
         loginValidator.ensureCodeIsNotExpired(loginSession);
 
-        getAccountInfoProto.GetAccountInfoResponse accountInfo = getAccountInfoGrpc.getAccountInfoByEmail(email)
-                .orElseThrow(() -> new InvalidCodeException());
+        Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
+                getAccountInfoGrpc.getAccountInfoByEmail(email);
+
+        if (accountInfoOpt.isEmpty()) {
+            loginSessionRepository.delete(loginSession);
+            throw new InvalidCodeException();
+        }
+
+        getAccountInfoProto.GetAccountInfoResponse accountInfo = accountInfoOpt.get();
 
         Map<String, com.google.protobuf.Value> userData = accountInfo.getUserDataMap();
 
@@ -147,7 +154,8 @@ public class LoginService {
         if (loginSessionOpt.isPresent()) {
             LoginSessionEntity session = loginSessionOpt.get();
 
-            if (session.getCodeExpires().before(Timestamp.from(Instant.now()))) {
+            if (session.getAccountId() == null || !session.getAccountId().equals(accountId)
+                    || session.getCodeExpires().before(Timestamp.from(Instant.now()))) {
                 String rawRefreshCode = codeGenerator.codeGenerate();
                 String hashedRefreshCode = codeGenerator.codeHash(rawRefreshCode);
                 long refreshCodeExpires = codeGenerator.codeExpiresGenerate();
@@ -159,20 +167,21 @@ public class LoginService {
                 return new LoginResponseDto(refreshCodeExpires);
             }
             return new LoginResponseDto(session.getCodeExpires().getTime());
-        } else {
-            String rawCode = codeGenerator.codeGenerate();
-            String hashedCode = codeGenerator.codeHash(rawCode);
-            long codeExpires = codeGenerator.codeExpiresGenerate();
-            LoginSessionEntity loginSession = LoginSessionEntity.builder()
-                    .accountId(accountId)
-                    .email(email)
-                    .code(hashedCode)
-                    .codeExpires(new Timestamp(codeExpires))
-                    .build();
-            log.info("LOGIN_CODE email={} code={}", email, rawCode);
-            loginSessionRepository.save(loginSession);
-            return new LoginResponseDto(codeExpires);
         }
+
+        String rawCode = codeGenerator.codeGenerate();
+        String hashedCode = codeGenerator.codeHash(rawCode);
+        long codeExpires = codeGenerator.codeExpiresGenerate();
+        LoginSessionEntity loginSession = LoginSessionEntity.builder()
+                .accountId(accountId)
+                .email(email)
+                .code(hashedCode)
+                .codeExpires(new Timestamp(codeExpires))
+                .build();
+        log.info("LOGIN_CODE email={} code={}", email, rawCode);
+        loginSessionRepository.save(loginSession);
+        return new LoginResponseDto(codeExpires);
+
     }
 
     private LoginResponseDto fakeLoginSessionCreateAndSave(String email) {
@@ -185,6 +194,8 @@ public class LoginService {
                 .codeExpires(new Timestamp(fakeCodeExpires))
                 .build();
         log.info("FAKE_LOGIN_CODE email={} code={}", email, "");
+        loginSessionRepository.findByEmail(email)
+                .ifPresent((session) -> loginSessionRepository.delete(session));
         loginSessionRepository.save(loginSession);
         return new LoginResponseDto(fakeCodeExpires);
     }

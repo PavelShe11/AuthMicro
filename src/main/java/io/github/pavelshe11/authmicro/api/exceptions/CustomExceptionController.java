@@ -36,7 +36,12 @@ public class CustomExceptionController {
                         resolveMessage(error.getMessage())
                 )).toList();
 
-        ErrorDto response = new ErrorDto(errorMessage, errors);
+        ErrorDto response = ErrorDto.builder()
+                .error(errorMessage)
+                .detailedErrors(errors)
+                .build();
+
+//        ErrorDto response = new ErrorDto(errorMessage, errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
@@ -56,12 +61,14 @@ public class CustomExceptionController {
     public ResponseEntity<ErrorDto> handleAbstractExceptions(AbstractException ex) {
         String errorMessage = messageSource.getMessage(
                 ex.getMessageCode(),
+
                 null,
                 LocaleContextHolder.getLocale()
         );
 
         ErrorDto response = ErrorDto.builder()
                 .error(errorMessage)
+                .errorCode(ex.getErrorCode())
                 .build();
 
         return ResponseEntity
@@ -94,7 +101,10 @@ public class CustomExceptionController {
                         error.getDefaultMessage()))
                 .toList();
 
-        ErrorDto response = new ErrorDto(contextMessage, errors);
+        ErrorDto response = ErrorDto.builder()
+                .error(contextMessage)
+                .detailedErrors(errors)
+                .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 

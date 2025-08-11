@@ -53,9 +53,13 @@ public class RegistrationService {
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
                 getAccountInfoGrpc.getAccountInfoByEmail(email);
 
+
         if (accountInfoOpt.isPresent() && accountExists(accountInfoOpt.get())) {
             return fakeRegistrationSessionCreateAndSave(email);
         }
+
+        registrationSessionRepository.findByEmail(email)
+                .ifPresent(registrationSessionRepository::delete);
 
         RegistrationResponseDto existingRegistrationSession = handleExistingRegistrationSession(email);
         if (existingRegistrationSession != null) return existingRegistrationSession;
