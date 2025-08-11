@@ -4,6 +4,6 @@ import org.springframework.http.HttpStatus;
 
 public class CodeExpiredException extends AbstractException {
     public CodeExpiredException() {
-        super("error.code.expired", HttpStatus.BAD_REQUEST);
+        super("error.code.expired", HttpStatus.BAD_REQUEST, 400);
     }
 }
