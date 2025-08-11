@@ -70,3 +70,5 @@ jwt:
 code:
   lifetime:
     minutes: ${CODE_LIFETIME_MINUTES}
+
+CODE_PATTERN: ${ACTUAL_CODE_PATTERN}

@@ -35,9 +35,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("io.grpc:grpc-services")
     implementation("net.devh:grpc-client-spring-boot-starter:2.15.0.RELEASE")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-    testImplementation("org.mockito:mockito-core:5.12.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 //    implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
 
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
@@ -47,6 +46,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation ("io.grpc:grpc-protobuf:1.73.0")
     implementation ("io.grpc:grpc-stub:1.73.0")
+    implementation("com.github.curious-odd-man:rgxgen:3.0")
 //    implementation ("com.google.protobuf:protobuf-java:3.25.1")
     compileOnly("org.projectlombok:lombok")
     compileOnly ("org.apache.tomcat:annotations-api:6.0.53")
