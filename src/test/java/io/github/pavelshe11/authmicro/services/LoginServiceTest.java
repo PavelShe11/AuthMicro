@@ -32,6 +32,7 @@ class LoginServiceTest {
         GetAccountInfoGrpc getAccountInfoGrpc = mock(GetAccountInfoGrpc.class);
         LoginValidation loginValidator = mock(LoginValidation.class);
         RefreshTokenSessionRepository refreshTokenSessionRepository = mock(RefreshTokenSessionRepository.class);
+        SessionCleanerService sessionCleanerService = mock(SessionCleanerService.class);
 
         LoginService loginService = new LoginService(
                 loginSessionRepository,
@@ -39,7 +40,8 @@ class LoginServiceTest {
                 jwtUtil,
                 getAccountInfoGrpc,
                 loginValidator,
-                refreshTokenSessionRepository
+                refreshTokenSessionRepository,
+                sessionCleanerService
         );
 
         // Arrange (подготовка)

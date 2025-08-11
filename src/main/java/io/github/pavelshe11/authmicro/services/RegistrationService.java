@@ -34,6 +34,7 @@ public class RegistrationService {
     private final RegistrationValidation registrationValidator;
     private final AccountValidatorGrpc accountValidatorGrpc;
     private final GetAccountInfoGrpc getAccountInfoGrpc;
+    private final SessionCleanerService sessionCleanerService;
 
     private static final Logger log = LoggerFactory.getLogger(RegistrationService.class);
 
@@ -53,24 +54,23 @@ public class RegistrationService {
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
                 getAccountInfoGrpc.getAccountInfoByEmail(email);
 
+        RegistrationResponseDto registrationResponse;
 
         if (accountInfoOpt.isPresent() && accountExists(accountInfoOpt.get())) {
-            return fakeRegistrationSessionCreateAndSave(email);
+            registrationResponse = fakeRegistrationSessionCreateAndSave(email);
+        } else {
+            Optional<RegistrationSessionEntity> sessionOpt = registrationSessionRepository.findByEmail(email);
+
+            if (sessionOpt.isPresent()) {
+                registrationResponse = handleExistingRegistrationSession(sessionOpt.get());
+            } else {
+                registrationResponse = handleNewRegistrationSession(email);
+            }
         }
 
-        registrationSessionRepository.findByEmail(email)
-                .ifPresent(registrationSessionRepository::delete);
-
-        RegistrationResponseDto existingRegistrationSession = handleExistingRegistrationSession(email);
-        if (existingRegistrationSession != null) return existingRegistrationSession;
-
-        String rawCode = codeGenerator.codeGenerate();
-        String hashedCode = codeGenerator.codeHash(rawCode);
-        long codeExpires = codeGenerator.codeExpiresGenerate();
-        log.info("REGISTRATION_CODE email={} code={}", email, rawCode);
-
-        return returnNewRegistrationResponseDto(email, hashedCode, new Timestamp(codeExpires));
+        return registrationResponse;
     }
+
 
     @Transactional
     public void confirmEmail(JsonNode registrationConfirmRequest, String ip) {
@@ -117,7 +117,8 @@ public class RegistrationService {
             throw new ServerAnswerException();
         }
 
-        registrationSessionRepository.delete(registrationSession);
+
+        sessionCleanerService.cleanRegistrationSession(registrationSession);
     }
 
 
@@ -148,25 +149,26 @@ public class RegistrationService {
     }
 
 
-    private RegistrationResponseDto handleExistingRegistrationSession(String email) {
-        RegistrationSessionEntity registrationSession = registrationSessionRepository
-                .findByEmail(email)
-                .orElse(null);
+    private RegistrationResponseDto handleExistingRegistrationSession(RegistrationSessionEntity registrationSession) {
 
-        if (registrationSession != null) {
-            if (!registrationValidator.isCodeExpired(registrationSession)) {
-                return new RegistrationResponseDto(registrationSession.getCodeExpires().getTime(),
-                        codeGenerator.getCodePattern());
-            }
-            String rawCode = codeGenerator.codeGenerate();
-            long codeExpires = codeGenerator.codeExpiresGenerate();
+        String rawCode = codeGenerator.codeGenerate();
+        long codeExpires = codeGenerator.codeExpiresGenerate();
+        Timestamp codeExpiresAt = new Timestamp(codeExpires);
 
+        boolean isFake = registrationSession.getCode().isEmpty();
+        boolean isExpired = registrationValidator.isCodeExpired(registrationSession);
+
+        if (isFake || isExpired) {
             return refreshCodeAndReturnRegistrationResponseDto(
                     registrationSession,
-                    rawCode, new Timestamp(codeExpires)
+                    rawCode, codeExpiresAt
             );
         }
-        return null;
+
+        return new RegistrationResponseDto(
+                registrationSession.getCodeExpires().getTime(),
+                codeGenerator.getCodePattern()
+        );
     }
 
     private RegistrationResponseDto refreshCodeAndReturnRegistrationResponseDto(RegistrationSessionEntity registrationSession, String code, Timestamp codeExpires) {
@@ -178,6 +180,14 @@ public class RegistrationService {
 
         return new RegistrationResponseDto(codeExpires.getTime(),
                 codeGenerator.getCodePattern());
+    }
+
+    private RegistrationResponseDto handleNewRegistrationSession(String email) {
+        String rawCode = codeGenerator.codeGenerate();
+        String hashedCode = codeGenerator.codeHash(rawCode);
+        long codeExpires = codeGenerator.codeExpiresGenerate();
+        log.info("REGISTRATION_CODE email={} code={}", email, rawCode);
+        return returnNewRegistrationResponseDto(email, hashedCode, new Timestamp(codeExpires));
     }
 
     private RegistrationResponseDto returnNewRegistrationResponseDto(String email, String code, Timestamp codeExpires) {

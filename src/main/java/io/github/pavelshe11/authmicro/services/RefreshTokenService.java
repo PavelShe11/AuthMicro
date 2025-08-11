@@ -24,6 +24,7 @@ public class RefreshTokenService {
     private final RefreshTokenValidation refreshTokenValidator;
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
     private final GetAccountInfoGrpc getAccountInfoGrpc;
+    private final SessionCleanerService sessionCleanerService;
 
     @Transactional
     public RefreshTokenResponseDto refreshTokens(String refreshToken) {
@@ -69,7 +70,7 @@ public class RefreshTokenService {
                 .expiresAt(refreshTokenExpires)
                 .build();
 
-        refreshTokenSessionRepository.delete(oldSession);
+        sessionCleanerService.cleanRefreshTokenSession(oldSession);
 
         refreshTokenSessionRepository.save(session);
 
