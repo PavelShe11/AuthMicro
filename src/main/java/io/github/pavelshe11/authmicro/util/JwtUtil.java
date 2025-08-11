@@ -37,11 +37,10 @@ public class JwtUtil {
         return createToken(claims, accessTokenLifetime);
     }
 
-    public String generateRefreshToken(UUID accountId, boolean isAdmin) {
+    public String generateRefreshToken(UUID accountId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "refresh");
         claims.put("accountId", accountId.toString());
-        claims.put("roles", List.of(isAdmin ? "admin" : "user"));
         return createToken(claims, refreshTokenLifetime);
     }
 

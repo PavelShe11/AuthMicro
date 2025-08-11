@@ -112,7 +112,7 @@ public class LoginService {
 
     private Map<String, Object> generateTokens(UUID accountId, boolean isAdmin) {
         String accessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
-        String refreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
+        String refreshToken = jwtUtil.generateRefreshToken(accountId);
         Map<String, Object> tokens = new HashMap<>();
         tokens.put("accessToken", accessToken);
         tokens.put("refreshToken", refreshToken);

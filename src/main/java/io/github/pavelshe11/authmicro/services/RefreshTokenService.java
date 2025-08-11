@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -54,7 +53,7 @@ public class RefreshTokenService {
         String currentIp = userData.getOrDefault("ip", Value.newBuilder().setStringValue("").build()).getStringValue();
 
         String newAccessToken = jwtUtil.generateAccessToken(accountId, isAdmin);
-        String newRefreshToken = jwtUtil.generateRefreshToken(accountId, isAdmin);
+        String newRefreshToken = jwtUtil.generateRefreshToken(accountId);
 
         Timestamp accessTokenExpires = jwtUtil.extractExpiration(newAccessToken);
         Timestamp refreshTokenExpires = jwtUtil.extractExpiration(newRefreshToken);
