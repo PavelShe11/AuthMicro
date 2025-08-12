@@ -2,15 +2,17 @@ package io.github.pavelshe11.authmicro.api.client.grpc;
 
 import io.github.pavelshe11.authmicro.grpc.GetAccountInfoServiceGrpc;
 import io.github.pavelshe11.authmicro.grpc.getAccountInfoProto;
+import lombok.AllArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class GetAccountInfoGrpc {
-    @GrpcClient("get-account-info-service")
-    private GetAccountInfoServiceGrpc.GetAccountInfoServiceBlockingStub getAccountInfoServiceBlockingStub;
+//    @GrpcClient("get-account-info-service")
+    private final GetAccountInfoServiceGrpc.GetAccountInfoServiceBlockingStub getAccountInfoServiceBlockingStub;
 
     public Optional<getAccountInfoProto.GetAccountInfoResponse> getAccountInfoByEmail(String email) {
         getAccountInfoProto.GetAccountInfoByEmailRequest request =

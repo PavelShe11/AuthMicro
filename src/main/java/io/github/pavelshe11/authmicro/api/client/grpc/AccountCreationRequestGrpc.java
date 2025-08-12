@@ -5,6 +5,7 @@ import com.google.protobuf.Value;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.grpc.AccountCreationProto;
 import io.github.pavelshe11.authmicro.grpc.AccountCreationServiceGrpc;
+import lombok.AllArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +13,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class AccountCreationRequestGrpc {
-    @GrpcClient("account-creation-service")
-    private AccountCreationServiceGrpc.AccountCreationServiceBlockingStub accountCreationServiceBlockingStub;
+//    @GrpcClient("account-creation-service")
+    private final AccountCreationServiceGrpc.AccountCreationServiceBlockingStub accountCreationServiceBlockingStub;
 
     public boolean createAccount(Map<String, Object> userData) {
         try {

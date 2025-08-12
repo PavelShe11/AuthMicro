@@ -36,19 +36,19 @@ management:
           - debug
           - env
 
-grpc:
-  client:
-    account-validator-service:
-      address: ${ACCOUNT_VALIDATOR_SERVICE_ADDRESS}
-      negotiation-type: plaintext
-
-    account-creation-service:
-      address: ${ACCOUNT_CREATION_SERVICE_ADDRESS}
-      negotiation-type: plaintext
-
-    get-account-info-service:
-      address: ${GET_ACCOUNT_INFO_SERVICE_ADDRESS}
-      negotiation-type: plaintext
+#grpc:
+#  client:
+#    account-validator-service:
+#      address: ${ACCOUNT_VALIDATOR_SERVICE_ADDRESS}
+#      negotiation-type: plaintext
+#
+#    account-creation-service:
+#      address: ${ACCOUNT_CREATION_SERVICE_ADDRESS}
+#      negotiation-type: plaintext
+#
+#    get-account-info-service:
+#      address: ${GET_ACCOUNT_INFO_SERVICE_ADDRESS}
+#      negotiation-type: plaintext
 
 logging:
   level:
@@ -72,3 +72,6 @@ code:
     minutes: ${CODE_LIFETIME_MINUTES}
 
 CODE_PATTERN: ${ACTUAL_CODE_PATTERN}
+
+GRPC_CONFIG_JSON: ${ENV_GRPC_CONFIG_JSON}
+GRPC_SERVICE_ADDRESS: ${ENV_GRPC_SERVICE_ADDRESS}

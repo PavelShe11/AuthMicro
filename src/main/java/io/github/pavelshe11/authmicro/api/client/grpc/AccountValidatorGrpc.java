@@ -3,6 +3,7 @@ package io.github.pavelshe11.authmicro.api.client.grpc;
 import com.google.protobuf.NullValue;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorProto;
+import lombok.AllArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
 import io.github.pavelshe11.authmicro.grpc.AccountValidatorServiceGrpc;
@@ -13,9 +14,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class AccountValidatorGrpc {
-    @GrpcClient("account-validator-service")
-    private AccountValidatorServiceGrpc.AccountValidatorServiceBlockingStub accountValidatorServiceBlockingStub;
+//    @GrpcClient("account-validator-service")
+    private final AccountValidatorServiceGrpc.AccountValidatorServiceBlockingStub accountValidatorServiceBlockingStub;
 
     public AccountValidatorProto.ValidateUserDataResponse validateUserData(Map<String, Object> userData) {
         Map<String, Value> userDataValueMap = convertToProtoValueMap(userData);
