@@ -4,6 +4,6 @@ import org.springframework.http.HttpStatus;
 
 public class ServerAnswerException extends AbstractException {
     public ServerAnswerException() {
-        super("error.server.error", HttpStatus.INTERNAL_SERVER_ERROR, 500);
+        super("error.server.error", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

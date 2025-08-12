@@ -4,6 +4,6 @@ import org.springframework.http.HttpStatus;
 
 public class InvalidTokenException extends AbstractException {
     public InvalidTokenException() {
-        super("error.invalid.token", HttpStatus.UNAUTHORIZED, 401);
+        super("error.invalid.token", HttpStatus.UNAUTHORIZED);
     }
 }

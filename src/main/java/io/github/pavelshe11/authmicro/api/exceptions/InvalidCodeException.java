@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 public class InvalidCodeException extends AbstractException {
 
     public InvalidCodeException() {
-        super("error.invalid.code", HttpStatus.UNAUTHORIZED, 401);
+        super("error.invalid.code", HttpStatus.UNAUTHORIZED);
     }
 }
 
