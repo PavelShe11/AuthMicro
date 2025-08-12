@@ -37,6 +37,7 @@ dependencies {
     implementation("net.devh:grpc-client-spring-boot-starter:2.15.0.RELEASE")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.h2database:h2")
 //    implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
 
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")

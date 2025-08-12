@@ -2,6 +2,7 @@ package io.github.pavelshe11.authmicro.validators;
 
 import io.github.pavelshe11.authmicro.api.exceptions.CodeIsNotExpiredException;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidTokenException;
+import io.github.pavelshe11.authmicro.api.exceptions.TokenExpiredException;
 import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -33,7 +34,7 @@ public class RefreshTokenValidation {
 
     public void checkIfTokenNotExpiredOrThrow(Jwt decodedToken) {
         if (decodedToken.getExpiresAt() == null || decodedToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new CodeIsNotExpiredException();
+            throw new TokenExpiredException();
         }
     }
 

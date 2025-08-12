@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  liquibase:
+    enabled: false
+  h2:
+    console:
+      enabled: false
+
+grpc:
+  client:
+    account-validator-service:
+      address: in-process:test
+      negotiation-type: plaintext
+    account-creation-service:
+      address: in-process:test
+      negotiation-type: plaintext
+    get-account-info-service:
+      address: in-process:test
+      negotiation-type: plaintext
+
+jwt:
+  access-token:
+    lifetime: 900000
+  refresh-token:
+    lifetime: 432000000
+  secret: test-secret
+
+code:
+  lifetime:
+    minutes: 5

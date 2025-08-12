@@ -1,5 +1,6 @@
 package io.github.pavelshe11.authmicro.services;
 
+import com.google.protobuf.Value;
 import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.components.CodeGenerator;
@@ -54,12 +55,12 @@ class LoginServiceTest {
 
         getAccountInfoProto.GetAccountInfoResponse accountInfo = getAccountInfoProto.GetAccountInfoResponse
                 .newBuilder()
-                .setAccountId(accountId.toString())
-                .setRole("admin")
+                .putUserData("accountId", Value.newBuilder().setStringValue(accountId.toString()).build())
+                .putUserData("role", Value.newBuilder().setStringValue("admin").build())
                 .build();
 
         when(loginValidator.getTrimmedEmailOrThrow(email)).thenReturn(trimmedEmail);
-        when(getAccountInfoGrpc.getAccountInfo(trimmedEmail)).thenReturn(Optional.of(accountInfo));
+        when(getAccountInfoGrpc.getAccountInfoByEmail(trimmedEmail)).thenReturn(Optional.of(accountInfo));
         when(loginSessionRepository.findByEmail(trimmedEmail)).thenReturn(Optional.empty());
         when(codeGenerator.codeGenerate()).thenReturn(rawCode);
         when(codeGenerator.codeHash(rawCode)).thenReturn(hashedCode);
