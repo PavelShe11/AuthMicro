@@ -13,4 +13,6 @@ public interface LoginSessionRepository extends JpaRepository<LoginSessionEntity
     Optional<LoginSessionEntity> findByEmail(String email);
 
     void deleteAllByCodeExpiresBefore(Timestamp fiveMinutesAgo);
+
+    boolean existsByEmail(String mail);
 }

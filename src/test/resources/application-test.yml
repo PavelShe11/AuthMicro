@@ -1,4 +1,6 @@
 spring:
+  security:
+    enabled: false
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
@@ -36,3 +38,9 @@ jwt:
 code:
   lifetime:
     minutes: 5
+
+CODE_PATTERN: "[0-9]{6}"
+REGISTRATION_LOGIN_SESSION_CLEAN_TIME: 600000
+CODE_CLEAN_TIME: 300000
+REFRESH_TOKEN_SESSION_CLEAN_TIME: 3600000
+AUTH_HTTP: 8080
