@@ -2,6 +2,7 @@ package io.github.pavelshe11.authmicro.api.exceptions;
 
 import io.github.pavelshe11.authmicro.api.dto.ErrorDto;
 import io.github.pavelshe11.authmicro.api.dto.FieldErrorDto;
+import io.grpc.StatusRuntimeException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -113,6 +114,17 @@ public class CustomExceptionController {
         } catch (NoSuchMessageException e) {
             return codeOrMessage;
         }
+    }
+
+    @ExceptionHandler(StatusRuntimeException.class)
+    public ResponseEntity<ErrorDto> handleGrpcException(StatusRuntimeException ex) {
+        ErrorDto response = ErrorDto.builder()
+                .error(messageSource.getMessage("server.inner.error", null, LocaleContextHolder.getLocale()))
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
     }
 }
 

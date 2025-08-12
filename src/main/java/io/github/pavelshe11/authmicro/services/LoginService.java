@@ -16,6 +16,7 @@ import io.github.pavelshe11.authmicro.store.repositories.LoginSessionRepository;
 import io.github.pavelshe11.authmicro.store.repositories.RefreshTokenSessionRepository;
 import io.github.pavelshe11.authmicro.util.JwtUtil;
 import io.github.pavelshe11.authmicro.validators.LoginValidation;
+import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,11 +83,11 @@ public class LoginService {
 
         LoginSessionEntity loginSession = loginValidator.validateLoginSessionOrThrow(loginSessionOpt);
 
-        loginValidator.checkIfCodeIsValid(loginSession, code);
-        loginValidator.ensureCodeIsNotExpired(loginSession);
-
         Optional<getAccountInfoProto.GetAccountInfoResponse> accountInfoOpt =
                 getAccountInfoGrpc.getAccountInfoByEmail(email);
+
+        loginValidator.checkIfCodeIsValid(loginSession, code);
+        loginValidator.ensureCodeIsNotExpired(loginSession);
 
         if (accountInfoOpt.isEmpty()) {
             sessionCleanerService.cleanLoginSession(loginSession);
