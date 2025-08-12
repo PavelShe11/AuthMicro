@@ -35,7 +35,6 @@ management:
           - info
           - debug
           - env
-          - selfHealth
 
 grpc:
   client:
