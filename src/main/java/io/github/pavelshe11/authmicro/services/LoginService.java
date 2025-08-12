@@ -4,6 +4,7 @@ package io.github.pavelshe11.authmicro.services;
 import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginConfirmResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
+import io.github.pavelshe11.authmicro.api.exceptions.CodeIsNotExpiredException;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
 import io.github.pavelshe11.authmicro.components.CodeGenerator;
@@ -201,11 +202,22 @@ public class LoginService {
 
     private LoginResponseDto fakeLoginSessionCreateAndSave(String email) {
 
-        long fakeCodeExpires = codeGenerator.codeExpiresGenerate();
-
         LoginSessionEntity fakeSession = loginSessionRepository
                 .findByEmail(email)
-                .orElseGet(() -> new LoginSessionEntity());
+                .orElseGet(() -> {
+                    LoginSessionEntity newSession = new LoginSessionEntity();
+                    newSession.setEmail(email);
+                    return newSession;
+                });
+
+        Timestamp currentExpiresTime = fakeSession.getCodeExpires();
+
+        if (currentExpiresTime != null &&
+                currentExpiresTime.after(new Timestamp(System.currentTimeMillis()))) {
+            return new LoginResponseDto(currentExpiresTime.getTime(), codeGenerator.getCodePattern());
+        }
+
+        long fakeCodeExpires = codeGenerator.codeExpiresGenerate();
 
         fakeSession.setAccountId(null);
         fakeSession.setEmail(email);

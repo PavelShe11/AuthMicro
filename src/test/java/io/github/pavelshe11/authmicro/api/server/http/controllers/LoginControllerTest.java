@@ -6,10 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
 @AutoConfigureMockMvc // для ответов на уровне контроллера и http
@@ -23,8 +25,13 @@ class LoginControllerTest {
 
     @Test
     @Sql(scripts = {"/data/cleanUp.sql", "/data/insertData.sql"})
-    void sendLoginCodePositiveTest() {
+    void sendLoginCodePositiveTest() throws Exception {
         LoginRequestDto loginRequestDto = new LoginRequestDto("test1@communicator.ru");
+
+        mockMvc.perform(post("/auth/sendCodeEmail")
+                .contentType(MediaType.APPLICATION_JSON))
+                .content(asJsonString(loginRequestDto)))
+        .andExect
     }
 
     @Test

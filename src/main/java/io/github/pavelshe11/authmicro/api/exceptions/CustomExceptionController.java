@@ -68,7 +68,6 @@ public class CustomExceptionController {
 
         ErrorDto response = ErrorDto.builder()
                 .error(errorMessage)
-                .errorCode(ex.getErrorCode())
                 .build();
 
         return ResponseEntity

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.pavelshe11.authmicro.api.client.grpc.AccountCreationRequestGrpc;
 import io.github.pavelshe11.authmicro.api.client.grpc.AccountValidatorGrpc;
 import io.github.pavelshe11.authmicro.api.client.grpc.GetAccountInfoGrpc;
+import io.github.pavelshe11.authmicro.api.dto.responses.LoginResponseDto;
 import io.github.pavelshe11.authmicro.api.dto.responses.RegistrationResponseDto;
 import io.github.pavelshe11.authmicro.api.exceptions.InvalidCodeException;
 import io.github.pavelshe11.authmicro.api.exceptions.ServerAnswerException;
@@ -129,11 +130,23 @@ public class RegistrationService {
     }
 
     private RegistrationResponseDto fakeRegistrationSessionCreateAndSave(String email) {
-        long fakeCodeExpires = codeGenerator.codeExpiresGenerate();
 
         RegistrationSessionEntity fakeSession = registrationSessionRepository
                 .findByEmail(email)
-                .orElseGet(() -> new RegistrationSessionEntity());
+                .orElseGet(() -> {
+                    RegistrationSessionEntity newSession = new RegistrationSessionEntity();
+                    newSession.setEmail(email);
+                    return newSession;
+                });
+
+        Timestamp currentExpiresTime = fakeSession.getCodeExpires();
+
+        if (currentExpiresTime != null &&
+                currentExpiresTime.after(new Timestamp(System.currentTimeMillis()))) {
+            return new RegistrationResponseDto(currentExpiresTime.getTime(), codeGenerator.getCodePattern());
+        }
+
+        long fakeCodeExpires = codeGenerator.codeExpiresGenerate();
 
         fakeSession.setEmail(email);
         fakeSession.setAcceptedPrivacyPolicy(false);
