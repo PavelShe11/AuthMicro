@@ -1,6 +1,7 @@
 package io.github.pavelshe11.authmicro.store.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.Constraint;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -13,7 +14,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "login_session")
+@Table(name = "login_session", uniqueConstraints = {
+        @UniqueConstraint(name = "uc_login_email_id", columnNames = {"email", "accountId"})
+})
 public class LoginSessionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,7 +26,7 @@ public class LoginSessionEntity {
     @Column(name = "account_id")
     private UUID accountId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
     @Column(nullable = false)
