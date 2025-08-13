@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_package = "io.github.pavelshe11.authmicro.grpc";
+option java_outer_classname = "AccountValidatorProto";
+
+import "google/protobuf/struct.proto";
+import "error.proto";
+
+service AccountValidatorService {
+  rpc ValidateUserData (ValidateUserDataRequest) returns (ValidateUserDataResponse) {}
+}
+
+message ValidateUserDataRequest {
+  map<string, google.protobuf.Value> userData = 1;
+}
+
+message ValidateUserDataResponse {
+  bool accept = 1;
+  string error = 2;
+  repeated FieldError detailedErrors = 3;
+}

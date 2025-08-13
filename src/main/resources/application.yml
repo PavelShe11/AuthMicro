@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
     url: jdbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_INTERNAL_PORT}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
@@ -21,6 +24,9 @@ spring:
         format_sql: true
 
 management:
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
@@ -29,3 +35,43 @@ management:
           - info
           - debug
           - env
+
+#grpc:
+#  client:
+#    account-validator-service:
+#      address: ${ACCOUNT_VALIDATOR_SERVICE_ADDRESS}
+#      negotiation-type: plaintext
+#
+#    account-creation-service:
+#      address: ${ACCOUNT_CREATION_SERVICE_ADDRESS}
+#      negotiation-type: plaintext
+#
+#    get-account-info-service:
+#      address: ${GET_ACCOUNT_INFO_SERVICE_ADDRESS}
+#      negotiation-type: plaintext
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
+    io.jsonwebtoken: DEBUG
+    io.github.pavelshe11.authmicro: DEBUG
+
+server:
+  port: ${AUTH_HTTP}
+
+jwt:
+  access-token:
+    lifetime: ${ACCESS_TOKEN_LIFETIME}
+  refresh-token:
+    lifetime: ${REFRESH_TOKEN_LIFETIME}
+  secret: ${JWT_SECRET}
+
+code:
+  lifetime:
+    minutes: ${CODE_LIFETIME_MINUTES}
+
+CODE_PATTERN: ${ACTUAL_CODE_PATTERN}
+
+GRPC_CONFIG_JSON: ${ENV_GRPC_CONFIG_JSON}
+GRPC_SERVICE_ADDRESS: ${ENV_GRPC_SERVICE_ADDRESS}

@@ -3,6 +3,7 @@ package io.github.pavelshe11.authmicro.store.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -33,9 +34,9 @@ public class RefreshTokenSessionEntity {
     private String ip;
 
     @Column(name = "expires_at", nullable = false)
-    private Instant expiresAt;
+    private Timestamp expiresAt;
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt = Instant.now();
+    private Timestamp createdAt = Timestamp.from(Instant.now());
 }

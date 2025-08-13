@@ -3,6 +3,7 @@ package io.github.pavelshe11.authmicro.store.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,16 +20,19 @@ public class LoginSessionEntity {
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "account_id", nullable = false)
+    @Column(name = "account_id")
     private UUID accountId;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(nullable = false)
     private String code;
 
     @Column(name = "code_expires", nullable = false)
-    private Instant codeExpires;
+    private Timestamp codeExpires;
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt = Instant.now();
+    private Timestamp createdAt = Timestamp.from(Instant.now());
 }
